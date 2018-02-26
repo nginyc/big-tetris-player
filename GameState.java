@@ -16,18 +16,100 @@ public class GameState {
 
     //the next several arrays define the piece vocabulary in detail
     //width of the pieces [piece ID][orientation]
-    public static int[][] P_WIDTH = { { 2 }, { 1, 4 }, { 2, 3, 2, 3 }, { 2, 3, 2, 3 }, { 2, 3, 2, 3 }, { 3, 2 },
-            { 3, 2 } };
-    //height of the pieces [piece ID][orientation]
-    public static int[][] P_HEIGHT = { { 2 }, { 4, 1 }, { 3, 2, 3, 2 }, { 3, 2, 3, 2 }, { 3, 2, 3, 2 }, { 2, 3 },
-            { 2, 3 } };
-    public static int[][][] P_BOTTOM = { { { 0, 0 } }, { { 0 }, { 0, 0, 0, 0 } },
-            { { 0, 0 }, { 0, 1, 1 }, { 2, 0 }, { 0, 0, 0 } }, { { 0, 0 }, { 0, 0, 0 }, { 0, 2 }, { 1, 1, 0 } },
-            { { 0, 1 }, { 1, 0, 1 }, { 1, 0 }, { 0, 0, 0 } }, { { 0, 0, 1 }, { 1, 0 } }, { { 1, 0, 0 }, { 0, 1 } } };
+    public static int[][] P_WIDTH = { 
+        { 2 }, 
+        { 1, 4 }, 
+        { 2, 3, 2, 3 },
+        { 2, 3, 2, 3 }, 
+        { 2, 3, 2, 3 }, 
+        { 3, 2 },
+        { 3, 2 }
+     };
 
-    public static int[][][] P_TOP = { { { 2, 2 } }, { { 4 }, { 1, 1, 1, 1 } },
-            { { 3, 1 }, { 2, 2, 2 }, { 3, 3 }, { 1, 1, 2 } }, { { 1, 3 }, { 2, 1, 1 }, { 3, 3 }, { 2, 2, 2 } },
-            { { 3, 2 }, { 2, 2, 2 }, { 2, 3 }, { 1, 2, 1 } }, { { 1, 2, 2 }, { 3, 2 } }, { { 2, 2, 1 }, { 2, 3 } } };
+    //height of the pieces [piece ID][orientation]
+    public static int[][] P_HEIGHT = { 
+        { 2 }, 
+        { 4, 1 }, 
+        { 3, 2, 3, 2 }, 
+        { 3, 2, 3, 2 }, 
+        { 3, 2, 3, 2 }, 
+        { 2, 3 },
+        { 2, 3 } 
+    };
+
+    //?? of the pieces [piece ID][orientation][num empty space at this col from bottom to block]
+    public static int[][][] P_BOTTOM = { 
+        { 
+            { 0, 0 } 
+        }, 
+        {  
+            { 0 }, 
+            { 0, 0, 0, 0 } 
+        },
+        { 
+            { 0, 0 }, 
+            { 0, 1, 1 }, 
+            { 2, 0 }, 
+            { 0, 0, 0 } 
+        }, 
+        { 
+            { 0, 0 }, 
+            { 0, 0, 0 }, 
+            { 0, 2 }, 
+            { 1, 1, 0 } 
+        },
+        { 
+            { 0, 1 }, 
+            { 1, 0, 1 }, 
+            { 1, 0 }, 
+            { 0, 0, 0 } 
+        }, 
+        { 
+            { 0, 0, 1 }, 
+            { 1, 0 } 
+        }, 
+        { 
+            { 1, 0, 0 }, 
+            { 0, 1 } 
+        } 
+    };
+
+    //?? of the pieces [piece ID][orientation][num empty space at this col from top to block]
+    public static int[][][] P_TOP = { 
+        { 
+            { 2, 2 } 
+        }, 
+        { 
+            { 4 }, 
+            { 1, 1, 1, 1 } 
+        },
+        { 
+            { 3, 1 }, 
+            { 2, 2, 2 }, 
+            { 3, 3 }, 
+            { 1, 1, 2 } 
+        }, 
+        { 
+            { 1, 3 }, 
+            { 2, 1, 1 }, 
+            { 3, 3 }, 
+            { 2, 2, 2 } 
+        },
+        { 
+            { 3, 2 }, 
+            { 2, 2, 2 }, 
+            { 2, 3 }, 
+            { 1, 2, 1 } 
+        },
+        { 
+            { 1, 2, 2 }, 
+            { 3, 2 } 
+        }, 
+        { 
+            { 2, 2, 1 }, 
+            { 2, 3 } 
+        } 
+    };
 
     // TODO: Refactor definition of legal moves if necessary
 
@@ -66,6 +148,7 @@ public class GameState {
     private int turn = 0; // Turn count
     private int rowsCleared = 0; // Rows cleared in total
     private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
+    private int numberOfPiecesInField = 0; // Number of filled squares in level
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
@@ -215,6 +298,7 @@ public class GameState {
         this.rowsClearedInCurrentMove = 0;
         int nextPiece = this.nextPiece;
         int turn = ++this.turn;
+        //this.numberOfPiecesInField += 
 
         int bottom = -1;
         // row corresponding to bottom of piece after falling
