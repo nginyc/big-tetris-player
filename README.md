@@ -1,7 +1,13 @@
 # Big Tetris Agent
 
-## Running the Code
+## Running the Player
 
 ```sh
-javac PlayerSkeleton.java && java PlayerSkeleton
+gradle run
+```
+
+## Training the Player
+
+```sh
+gradle train
 ```
