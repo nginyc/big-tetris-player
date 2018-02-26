@@ -12,13 +12,21 @@ public class GameStateUtilityLearner {
 	public int noOfTriesPerIndividual;
 	public int populationSize; 
 	public float mutationProb;
+	public int tournamentSampleSize;
+	public float survivorsFraction;
+	public float meanAltererProb;
 
-	public static int WEIGHTS_COUNT = 8;
+	public static int WEIGHTS_COUNT = 7;
 
-	public GameStateUtilityLearner(int noOfTriesPerIndividual, int populationSize, float mutationProb) {
+	public GameStateUtilityLearner(int noOfTriesPerIndividual, int populationSize, 
+		float mutationProb, int tournamentSampleSize,
+		float survivorsFraction, float meanAltererProb) {
 		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
 		this.populationSize = populationSize;
 		this.mutationProb = mutationProb;
+		this.tournamentSampleSize = tournamentSampleSize;
+		this.survivorsFraction = survivorsFraction;
+		this.meanAltererProb = meanAltererProb;
 	}
 
 	private double getFitness(Genotype<DoubleGene> gt) {
@@ -28,16 +36,20 @@ public class GameStateUtilityLearner {
 			throw new IllegalStateException();
 		}
 
-		PlayerSkeleton p = new PlayerSkeleton(weights);
-		
-		double rowsCleared = 0;
+		GameStateUtilityFunction utilityFunction = new GameStateUtilityFunction(weights);
+		GameStateSearcher gameStateSearcher = new GameStateSearcher(utilityFunction);
+
+		int rowsCleared = 0;
 		for (int i = 0; i < this.noOfTriesPerIndividual; i ++) {
-			State s = new State();
-			while(!s.hasLost()) {
-				int[] move = p.pickMove(s);
-				s.makeMove(move[0], move[1]);
+			GameState gameState = new GameState();
+			while(gameState.hasPlayerLost() == 0) {
+				// Randomly get a piece
+				int nextPiece = gameState.getRandomNextPiece();
+				gameState.setNextPiece(nextPiece);
+				int[] move = gameStateSearcher.getBestMove(gameState);
+				gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT]);
 			}
-			rowsCleared += s.getRowsCleared(); 
+			rowsCleared += gameState.getRowsCleared(); 
 		}
 
 		double fitness = (double)rowsCleared / this.noOfTriesPerIndividual;
@@ -52,8 +64,13 @@ public class GameStateUtilityLearner {
 		// Define engine that takes in the utility function
 		Engine<DoubleGene, Double> engine = Engine
 				.builder(this::getFitness, gtf)
+				.survivorsSelector(
+					new TournamentSelector<>(this.tournamentSampleSize)
+				)
+				.survivorsFraction(this.survivorsFraction)
 				.alterers(
-					new Mutator<>(mutationProb)
+					new MeanAlterer<>(this.meanAltererProb),
+					new Mutator<>(this.mutationProb)
 				)
 				.populationSize(this.populationSize)
 				.build();

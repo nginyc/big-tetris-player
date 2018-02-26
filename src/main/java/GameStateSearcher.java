@@ -16,7 +16,7 @@ public class GameStateSearcher {
 
     // For each possible move, evaluate the resultant game state and return move with highest utility
     int[] bestMove = null;
-    double bestMoveUtil = -Float.MAX_VALUE;
+    double bestMoveUtil = -Double.MAX_VALUE;
     for (int[] legalMove : legalMoves) {
       int orient = legalMove[GameState.ORIENT];
       int slot = legalMove[GameState.SLOT];
@@ -25,7 +25,7 @@ public class GameStateSearcher {
       double moveUtil = utilityFunction.get(gameState);
       // System.out.println(String.format("Considering move %s resulting in util %f...", Arrays.toString(legalMove), moveUtil));
       // System.out.println(gameState);
-      if (moveUtil > bestMoveUtil) {
+      if (moveUtil >= bestMoveUtil) {
         bestMove = legalMove;
         bestMoveUtil = moveUtil;
       }

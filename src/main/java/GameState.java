@@ -159,6 +159,14 @@ public class GameState {
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
 
+    public GameState() {
+        this.field = new int[ROWS][COLS];
+        this.nextPiece = -1; // Not set
+        this.lost = 0;
+        this.turn = 0;
+        this.rowsCleared = 0;
+    }
+
     public GameState(int[][] field, int nextPiece, int lost, int turn, int rowsCleared) {
         // Board field must match COLS and ROWS
         if (field.length != ROWS || field[0].length != COLS) {
@@ -397,6 +405,9 @@ public class GameState {
 
                     // Lower top
                     this.top[c]--;
+                    while(this.top[c]>=1 && this.field[this.top[c]-1][c] == 0)	{
+                        this.top[c]--;
+                    }
                 }
             }
         }
@@ -422,6 +433,10 @@ public class GameState {
         return LEGAL_MOVES[this.nextPiece];
     }
 
+    public int getRandomNextPiece() {
+		return (int)(Math.random()*N_PIECES);
+	}
+	
     @Override
     public String toString() {
         return String.format(
