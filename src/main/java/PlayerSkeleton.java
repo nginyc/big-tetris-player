@@ -4,8 +4,8 @@ public class PlayerSkeleton {
 	private GameStateSearcher gameStateSearcher;
 	private GameStateUtilityFunction utilityFunction;
 
-	public PlayerSkeleton() {
-		this.utilityFunction = new GameStateUtilityFunction();
+	public PlayerSkeleton(double[] weights) {
+		this.utilityFunction = new GameStateUtilityFunction(weights);
 		this.gameStateSearcher = new GameStateSearcher(utilityFunction);
 	}
 
@@ -22,7 +22,9 @@ public class PlayerSkeleton {
 	public static void main(String[] args) {
 		State s = new State();
 		new TFrame(s);
-		PlayerSkeleton p = new PlayerSkeleton();
+		PlayerSkeleton p = new PlayerSkeleton(new double[] {
+			307.85956268705786, -125.48065588885129, -992.92711657553, -113.69050482705222, -218.4353546826212, -392.3555989952125
+		});
 		while(!s.hasLost()) {
 			System.out.println("Picking next move...");
 			int[] move = p.pickMove(s);
@@ -30,7 +32,7 @@ public class PlayerSkeleton {
 			s.draw();
 			s.drawNext(0,0);
 			try {
-				Thread.sleep(500);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
