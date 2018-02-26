@@ -152,6 +152,9 @@ public class GameState {
     private int rowsCleared = 0; // Rows cleared in total
     private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
     private int numBlocksInField = 0; // Number of filled squares in level
+    private int numFacesInContactWithEachOther = 0; // Number of contacts between all blocks
+    private int numFacesInContactWithWall = 0; // Number of contacts from all blocks to the wall
+    private int numFacesInContactWithFloor = 0; // Number of contacts from all blocks to the floor
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
@@ -250,11 +253,21 @@ public class GameState {
         return blockades;
     }
 
+    public int getBlockadeHolesTotalVolumeMultiplied() {
+        int count = 0;
+        for (int c = 0; c < COLS; c++) {
+            if (top[c] == 0)
+                continue;
+            count += getHolesAt(c) * getBlockadeAt(c);
+        }
+        return count;
+    }
+
     // This heuristic encourages smoothness of the "terrain" (TOP only)
-    public int getBumpiness() {
+    public int getBumpiness(int powerFactor) {
         int bumpiness = 0;
         for (int c = 0; c < COLS - 1; c++) {
-            bumpiness += Math.abs(top[c] - top[c + 1]);
+            bumpiness += Math.pow(Math.abs(top[c] - top[c + 1]), powerFactor);
         }
         return bumpiness;
     }
@@ -279,16 +292,20 @@ public class GameState {
 
     // This heuristic encourages the completion of rows
     public int erodedPieceCells() {
-        System.out.println(nextPiece);
-        return rowsClearedInCurrentMove;
+        // Number of rows that cleared x Number of blocks of the variant that got destroyed
+        return -1;
     }
 
-    public int leftColumnEmptyStrategy() {
-        if (top[0] < top[1] + 2 && nextPiece == 1) {
-            return 1;
-        } else {
-            return -1;
-        }
+    public int numEdgesTouchingAnotherBlock() {
+        return -1;
+    }
+
+    public int numEdgesTouchingTheWall() {
+        return -1;
+    }
+
+    public int numEdgesTouchingTheFloor() {
+        return -1;
     }
 
     /////////////////////////////////////////////////////////////////
