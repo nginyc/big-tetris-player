@@ -157,7 +157,7 @@ public class GameState {
     private int numFacesInContactWithWall = 0; // Number of contacts from all blocks to the wall
     private int numFacesInContactWithFloor = 0; // Number of contacts from all blocks to the floor
     private int bottom = 0; // Row corresponding to bottom of piece after falling
-    private int prevPiece = -1; // Previous piece that was placed, -1 for not set
+    private int prevPiece; // Previous piece that was placed, -1 for not set
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
@@ -170,6 +170,7 @@ public class GameState {
 
         this.field = field;
         this.nextPiece = nextPiece;
+        this.prevPiece = nextPiece; // To store next piece when it is cleared
         this.lost = lost;
         this.turn = turn;
         this.rowsCleared = rowsCleared;
@@ -180,6 +181,7 @@ public class GameState {
     private GameState(int[][] field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
         this.field = field;
         this.nextPiece = nextPiece;
+        this.prevPiece = nextPiece;
         this.lost = lost;
         this.turn = turn;
         this.rowsCleared = rowsCleared;
@@ -408,7 +410,6 @@ public class GameState {
             }
         }
 
-        this.prevPiece = this.nextPiece;
         this.nextPiece = -1;
         this.rowsCleared += this.rowsClearedInCurrentMove;
         this.bottom = bottom;
@@ -422,7 +423,7 @@ public class GameState {
         this.nextPiece = piece;
     }
 
-    // On player's turnm, get legal moves for player as an array of {slot, orient} duples
+    // On player's turn, get legal moves for player as an array of {slot, orient} duples
     public int[][] getLegalPlayerMoves() {
         if (this.nextPiece == -1) {
             throw new IllegalStateException();
