@@ -126,9 +126,54 @@ public class GameState {
     );
   }
 
+  ///////////////////////// Heuristics ////////////////////////////
+
   public int getMaxTopHeight() {
     return Arrays.stream(top).max().orElse(0);
   }
+
+  public int getHolesTotalVolume() {
+    int holes = 0;
+    for (int c = 0; c < COLS; c++) {
+      int r = top[c];
+      if (r == 0) continue;
+      for (int i = r - 1; i >= 0; i--) {
+        if (field[i][c] == 0) {
+          holes++;
+        }
+      }
+    }
+    return holes;
+  }
+
+  public int getBlockadesTotalVolume() {
+    int potentialBlockades = 0;
+    int blockades = 0;
+    for (int c = 0; c < COLS; c++) {
+      potentialBlockades = 0;
+      int r = top[c];
+      if (r == 0) continue;
+      for (int i = r - 1; i >= 0; i--) {
+        if (field[i][c] != 0) {
+          potentialBlockades++;
+        } else {
+          blockades += potentialBlockades;
+          potentialBlockades = 0;
+        }
+      }
+    }
+    return blockades;
+  }
+
+  public int getBumpiness() {
+    int bumpiness = 0;
+    for (int c = 0; c < COL - 1; c++) {
+      bumpiness += Math.abs(top[c] - top[c + 1]);
+    }
+    return bumpiness;
+  }
+
+  /////////////////////////////////////////////////////////////////
 
   public int hasPlayerLost() {
     return this.lost;
