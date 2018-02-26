@@ -110,11 +110,12 @@ public class GameState {
     this.refreshTop();
   }
 
-  private GameState(int[][] field, int nextPiece, int lost, int turn, int[] top) {
+  private GameState(int[][] field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
     this.field = field;
     this.nextPiece = nextPiece;
     this.lost = lost;
     this.turn = turn;
+    this.rowsCleared = rowsCleared;
     this.top = top;
   }
 
@@ -122,7 +123,7 @@ public class GameState {
     int[][] fieldClone = Arrays.stream(this.field).map(row -> Arrays.copyOf(row, row.length)).toArray(int[][]::new);
     int[] topClone = Arrays.stream(this.top).toArray();
     return new GameState(
-      fieldClone, this.nextPiece, this.lost, this.turn, topClone
+      fieldClone, this.nextPiece, this.lost, this.turn, this.rowsCleared, topClone
     );
   }
 
@@ -130,6 +131,10 @@ public class GameState {
 
   public int getMaxTopHeight() {
     return Arrays.stream(top).max().orElse(0);
+  }
+
+  public int getRowsCleared() {
+    return this.rowsCleared;
   }
 
   public int getHolesTotalVolume() {
@@ -167,7 +172,7 @@ public class GameState {
 
   public int getBumpiness() {
     int bumpiness = 0;
-    for (int c = 0; c < COL - 1; c++) {
+    for (int c = 0; c < COLS - 1; c++) {
       bumpiness += Math.abs(top[c] - top[c + 1]);
     }
     return bumpiness;
