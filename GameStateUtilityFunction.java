@@ -5,10 +5,10 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 		return 
 		(100f) * gameState.getRowsCleared() + 
 		(-0.5f) * gameState.getMaxTopHeight() + 
-		(-1f) * gameState.getHolesTotalVolume() + 
-		(-1f) * gameState.getBlockadesTotalVolume() + 
-		(-1f) * gameState.getBumpiness() + 
-		(-1f) * gameState.getWells() +
+		(-100f) * gameState.getHolesTotalVolume() +
+		(-10f) * gameState.getBlockadesTotalVolume() +
+		(-10f) * gameState.getBumpiness() +
+		(-10f) * gameState.getWells() +
 		//(8f) * gameState.leftColumnEmptyStrategy() +
 		//(0f) * gameState.erodedPieceCells() +
 		(-1000f) * gameState.hasPlayerLost();
