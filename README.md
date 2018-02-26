@@ -3,11 +3,11 @@
 ## Running the Player
 
 ```sh
-gradle run
+./gradlew run
 ```
 
 ## Training the Player
 
 ```sh
-gradle train
+./gradlew train
 ```
