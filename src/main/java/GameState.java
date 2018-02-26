@@ -309,6 +309,7 @@ public class GameState {
         for (int c = 0; c < COLS; c++) {
             meanHeightDifference += Math.abs(getAverageHeightOfCols() - top[c]);
         }
+        meanHeightDifference = meanHeightDifference / COLS;
         return meanHeightDifference;
     }
 
