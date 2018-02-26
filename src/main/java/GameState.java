@@ -290,6 +290,11 @@ public class GameState {
         return wellScore;
     }
 
+    public int getLandingHeight() {
+        //TODO
+        return -1;
+    }
+    
     public int getAverageHeightOfCols() {
         int totalHeight = 0;
         for (int c = 0; c < COLS; c++) {
