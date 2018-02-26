@@ -14,6 +14,9 @@ public class GameState {
     //possible orientations for a given piece type
     public static int[] P_ORIENTS = { 1, 2, 4, 4, 4, 2, 2 };
 
+    //Volume of each blocks
+    public static int[] P_VOLUME = { 4, 4, 4, 4, 4, 4, 4 };
+
     //the next several arrays define the piece vocabulary in detail
     //width of the pieces [piece ID][orientation]
     public static int[][] P_WIDTH = { 
@@ -148,7 +151,7 @@ public class GameState {
     private int turn = 0; // Turn count
     private int rowsCleared = 0; // Rows cleared in total
     private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
-    private int numberOfPiecesInField = 0; // Number of filled squares in level
+    private int numBlocksInField = 0; // Number of filled squares in level
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
@@ -195,6 +198,10 @@ public class GameState {
 
     public int getRowsClearedInCurrentMove() {
         return this.rowsClearedInCurrentMove;
+    }
+
+    public int getNumBlocksInField() {
+        return this.numBlocksInField;
     }
 
     // This heuristic penalizes the volume of the holes
@@ -298,7 +305,7 @@ public class GameState {
         this.rowsClearedInCurrentMove = 0;
         int nextPiece = this.nextPiece;
         int turn = ++this.turn;
-        //this.numberOfPiecesInField += 
+        this.numBlocksInField += P_VOLUME[this.nextPiece];
 
         int bottom = -1;
         // row corresponding to bottom of piece after falling
@@ -340,6 +347,7 @@ public class GameState {
 
             // If the row was full - remove it and slide above stuff down
             if (full) {
+                this.numBlocksInField -= COLS;
                 this.rowsClearedInCurrentMove++;
                 // For each column
                 for (int c = 0; c < COLS; c++) {
