@@ -294,6 +294,14 @@ public class GameState {
         //TODO
         return -1;
     }
+    
+    public int getAverageHeightOfCols() {
+        int totalHeight = 0;
+        for (int c = 0; c < COLS; c++) {
+            totalHeight += top[c];
+        }
+        return (totalHeight / COLS);
+    }
 
     // This heuristic encourages the completion of rows
     public int erodedPieceCells() {
