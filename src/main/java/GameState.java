@@ -233,6 +233,50 @@ public class GameState {
         return count;
     }
 
+    // imagine xx___xx, there will be 2 row transitions
+    public int getRowTransitions() {
+        int maxFilledRow = Arrays.stream(top).max().getAsInt();
+        int transitions = 0;
+        for (int r = 0; r < maxFilledRow; r++) {
+            transitions += getRowTransitionsAt(r);
+        }
+        return transitions;
+    }
+
+    private int getRowTransitionsAt(int r) {
+        int count = 0;
+        int lastScanned = 0; // 0 if not filled, 1 if filled
+        for (int c = 0; c < COLS; c++) {
+            if ((field[r][c] != 0 && lastScanned == 0) || (lastScanned != 0 && field[r][c] == 0)) {
+                count++;
+            }
+            lastScanned = field[r][c];
+        }
+        return count;
+    }
+
+    public int getColTransitions() {
+        int transitions = 0;
+        for (int c = 0; c < COLS; c++) {
+            if (top[c] == 0)
+                continue;
+            transitions += getColTransitionsAt(c);
+        }
+        return transitions;
+    }
+
+    private int getColTransitionsAt(int c) {
+        int count = 0;
+        int lastScanned = 0; // 0 if not filled, 1 if filled
+        for (int i = top[c] - 1; i >= 0; i--) {
+            if ((field[i][c] != 0 && lastScanned == 0) || (lastScanned != 0 && field[i][c] == 0)) {
+                count++;
+            }
+            lastScanned = field[i][c];
+        }
+        return count;
+    }
+
     // This heuristic penalizes deepness of the holes
     public int getBlockadesTotalVolume() {
         int blockades = 0;

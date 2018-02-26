@@ -3,7 +3,7 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 	private double[] weights;
 
 	public GameStateUtilityFunction(double[] weights) {
-		if (weights.length != 10) {
+		if (weights.length != 12) {
 			throw new IllegalArgumentException();
 		}
 
@@ -21,6 +21,8 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 			weights[6] * gameState.getNumBlocksInField() +
 			weights[7] * gameState.hasPlayerLost() +
 			weights[8] * gameState.getMeanHeightDifference() +
-			weights[9] * gameState.getLandingHeight();
+			weights[9] * gameState.getLandingHeight() +
+			weights[10] * gameState.getColTransitions() + //col transitions seem to be more damaging than row
+			weights[11] * gameState.getRowTransitions();
 	}
 }
