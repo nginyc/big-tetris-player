@@ -2,3 +2,14 @@ You have completed 19 rows.
 You have completed 337 rows.
 You have completed 386 rows.
 You have completed 1914 rows.
+
+GameStateUtilityLearner learner = new GameStateUtilityLearner(
+    20, 100, 0.1f, 5, 0.75f, 0.05f
+);
+Best phenotype of generation 50 has fitness 1929.45 with weights [0.11080798197343034, -0.18515008865268023, -0.9795315029275597, -0.0790712549120135, -0.12479505264773527, -0.034977769982153184, -0.11448819424554002, -0.8706174245577252]
+
+GameStateUtilityLearner learner = new GameStateUtilityLearner(
+    20, 100, 0.25f, 5, 0.75f, 0.05f
+)
+Best phenotype of generation 133 has fitness 6539.25 with weights [-0.3208433615384241, -0.11081195413475875, -0.9605866492448987, -0.17979304088323622, -0.14854310222244482, -0.10959924803520749, -0.054347037107380425]
+<=========----> 75% EXECUTING [32m 35s]
