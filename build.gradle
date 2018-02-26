@@ -20,8 +20,6 @@ mainClassName = 'PlayerSkeleton'
 dependencies {
     compile 'com.google.guava:guava:23.0'
 
-    compile 'io.jenetics:jenetics:4.1.0'    
-
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
 }

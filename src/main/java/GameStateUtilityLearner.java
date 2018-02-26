@@ -9,24 +9,26 @@ import io.jenetics.util.Factory;
 public class GameStateUtilityLearner {
 
 	public static int CUTOFF_STEADY_FITNESS_GENERATIONS = 100; 
-	public int noOfTriesPerIndividual;
-	public int populationSize; 
-	public float mutationProb;
-	public int tournamentSampleSize;
-	public float survivorsFraction;
-	public float meanAltererProb;
+	private int noOfTriesPerIndividual;
+	private int populationSize; 
+	private float mutationProb;
+	private int tournamentSampleSize;
+	private float survivorsFraction;
+	private float meanAltererProb;
+	private float crossoverProb;
 
-	public static int WEIGHTS_COUNT = 7;
+	public static int WEIGHTS_COUNT = 8;
 
 	public GameStateUtilityLearner(int noOfTriesPerIndividual, int populationSize, 
 		float mutationProb, int tournamentSampleSize,
-		float survivorsFraction, float meanAltererProb) {
+		float survivorsFraction, float meanAltererProb, float crossoverProb) {
 		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
 		this.populationSize = populationSize;
 		this.mutationProb = mutationProb;
 		this.tournamentSampleSize = tournamentSampleSize;
 		this.survivorsFraction = survivorsFraction;
 		this.meanAltererProb = meanAltererProb;
+		this.crossoverProb = crossoverProb;
 	}
 
 	private double getFitness(Genotype<DoubleGene> gt) {

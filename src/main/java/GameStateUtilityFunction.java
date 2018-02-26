@@ -3,7 +3,7 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 	private double[] weights;
 
 	public GameStateUtilityFunction(double[] weights) {
-		if (weights.length != 7) {
+		if (weights.length != 8) {
 			throw new IllegalArgumentException();
 		}
 
@@ -21,7 +21,8 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 			weights[2] * gameState.getHolesTotalVolume() +
 			weights[3] * gameState.getBlockadesTotalVolume() +
 			weights[4] * gameState.getBumpiness(1) +
-			weights[5] * gameState.getWells() +
-			weights[6] * gameState.getNumBlocksInField();
+			weights[5] * gameState.getWells(2) +
+			weights[6] * gameState.getNumBlocksInField() +
+			weights[7] * gameState.getMeanHeightDifference();
 	}
 }

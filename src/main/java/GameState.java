@@ -282,18 +282,18 @@ public class GameState {
 
     // This heuristic discourages formation of wells
     // Wells is defined as a 1-block wide valley.
-    public int getWells() {
+    public int getWells(int powerFactor) {
         int wellScore = 0;
         if (top[0] < top[1]) {
-            wellScore += Math.pow(top[0] - top[1], 2);
+            wellScore += Math.pow(top[0] - top[1], powerFactor);
         }
         for (int c = 1; c < COLS - 1; c++) {
             if (top[c - 1] > top[c] && top[c + 1] > top[c]) {
-                wellScore += Math.pow(Math.min(top[c - 1], top[c + 1]) - top[c], 2);
+                wellScore += Math.pow(Math.min(top[c - 1], top[c + 1]) - top[c], powerFactor);
             }
         }
         if (top[COLS - 1] < top[COLS - 2]) {
-            wellScore += Math.pow(top[COLS - 1] - top[COLS - 2], 2);
+            wellScore += Math.pow(top[COLS - 1] - top[COLS - 2], powerFactor);
         }
         return wellScore;
     }
@@ -317,6 +317,7 @@ public class GameState {
         for (int c = 0; c < COLS; c++) {
             meanHeightDifference += Math.abs(getAverageHeightOfCols() - top[c]);
         }
+        meanHeightDifference = meanHeightDifference / COLS;
         return meanHeightDifference;
     }
 
