@@ -8,8 +8,21 @@ GameStateUtilityLearner learner = new GameStateUtilityLearner(
 );
 Best phenotype of generation 50 has fitness 1929.45 with weights [0.11080798197343034, -0.18515008865268023, -0.9795315029275597, -0.0790712549120135, -0.12479505264773527, -0.034977769982153184, -0.11448819424554002, -0.8706174245577252]
 
-GameStateUtilityLearner learner = new GameStateUtilityLearner(
+
+GameStateUtilityLearner learner = new GameStateUtilityLearner(\  
     20, 100, 0.25f, 5, 0.75f, 0.05f
 )
 Best phenotype of generation 133 has fitness 6539.25 with weights [-0.3208433615384241, -0.11081195413475875, -0.9605866492448987, -0.17979304088323622, -0.14854310222244482, -0.10959924803520749, -0.054347037107380425]
 <=========----> 75% EXECUTING [32m 35s]
+ 
++ Mean height difference
+GameStateUtilityLearner learner = new GameStateUtilityLearner(
+    20, 100, 0.25f, 5, 0.75f, 0.05f
+);
+Best phenotype of generation 265 has fitness 1982.7 with weights [0.6884714803027829, -0.0024654017186711563, -0.7952180639565078, -0.05881833026382144, -0.1260883255844718, -0.18700906227787795, 0.04507657607503135, 0.03675445364958563]
+<=========----> 75% EXECUTING [55m 49s]
+
+After removing int[]][] creation for field
+
+Best phenotype of generation 62 has fitness 1607.45 with weights [-0.28128394558625436, 0.005897435913126081, -0.9250486481113267, -0.08822846599200052, -0.059443451005671166, -0.08639102845512525, -0.2707727687303585, -0.13745975211320682]
+<=========----> 75% EXECUTING [13m 22s]

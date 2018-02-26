@@ -145,7 +145,7 @@ public class GameState {
     }
 
     // State variables
-    private int[][] field; // As defined in `State`
+    private HashMap<Integer, Integer> field; // Mapping from field index to turn no., not occupied if it doesn't exist
     private int nextPiece; // As defined in `State`, -1 for not set
     private int lost; // 1 if lost, 0 otherwise  
     private int turn = 0; // Turn count
@@ -160,11 +160,20 @@ public class GameState {
     private int[] top = new int[COLS]; // Top filled row of each column
 
     public GameState() {
-        this.field = new int[ROWS][COLS];
+        this.field = new HashMap<Integer, Integer>();
         this.nextPiece = -1; // Not set
         this.lost = 0;
         this.turn = 0;
         this.rowsCleared = 0;
+    }
+
+    private void populateField(int[][] field) {
+        this.field = new HashMap<>();
+        for (int r = 0; r < ROWS; r ++) {
+            for (int c = 0; c < COLS; c ++) {
+                this.setField(r, c, field[r][c]);
+            }
+        }
     }
 
     public GameState(int[][] field, int nextPiece, int lost, int turn, int rowsCleared) {
@@ -173,16 +182,17 @@ public class GameState {
             throw new IllegalArgumentException();
         }
 
-        this.field = field;
+        this.field = new HashMap<Integer, Integer>();
         this.nextPiece = nextPiece;
         this.lost = lost;
         this.turn = turn;
         this.rowsCleared = rowsCleared;
-
+        
+        this.populateField(field);
         this.refreshTop();
     }
 
-    private GameState(int[][] field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
+    private GameState(HashMap<Integer, Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.lost = lost;
@@ -192,9 +202,12 @@ public class GameState {
     }
 
     public GameState clone() {
-        int[][] fieldClone = Arrays.stream(this.field).map(row -> Arrays.copyOf(row, row.length)).toArray(int[][]::new);
+        HashMap<Integer, Integer> fieldClone = new HashMap<Integer, Integer>(this.field);
         int[] topClone = Arrays.stream(this.top).toArray();
-        return new GameState(fieldClone, this.nextPiece, this.lost, this.turn, this.rowsCleared, topClone);
+        return new GameState(
+            fieldClone, this.nextPiece, this.lost, 
+            this.turn, this.rowsCleared, topClone
+        );
     }
 
     ///////////////////////// Heuristics ////////////////////////////
@@ -229,7 +242,7 @@ public class GameState {
     private int getHolesAt(int c) {
         int count = 0;
         for (int i = top[c] - 1; i >= 0; i--) {
-            if (field[i][c] == 0) {
+            if (this.getField(i, c) == 0) {
                 count++;
             }
         }
@@ -251,7 +264,7 @@ public class GameState {
         int potentialBlockades = 0;
         int blockades = 0;
         for (int i = top[c] - 1; i >= 0; i--) {
-            if (field[i][c] != 0) {
+            if (this.getField(i, c) != 0) {
                 potentialBlockades++;
             } else {
                 blockades += potentialBlockades;
@@ -339,6 +352,13 @@ public class GameState {
         return -1;
     }
 
+    public int getField(int row, int col) {
+        int fieldIndex = getFieldIndex(row, col);
+        Integer cell = field.get(fieldIndex);
+        return (cell == null) ? 0 : cell;
+    }
+
+
     /////////////////////////////////////////////////////////////////
 
     public int hasPlayerLost() {
@@ -372,7 +392,7 @@ public class GameState {
         for (int i = 0; i < P_WIDTH[nextPiece][orient]; i++) {
             // From bottom to top of piece
             for (int h = bottom + P_BOTTOM[nextPiece][orient][i]; h < bottom + P_TOP[nextPiece][orient][i]; h++) {
-                this.field[h][i + slot] = turn;
+                this.setField(h, i + slot, turn);
             }
         }
 
@@ -387,7 +407,7 @@ public class GameState {
             // Check all columns in the row
             boolean full = true;
             for (int c = 0; c < COLS; c++) {
-                if (this.field[r][c] == 0) {
+                if (this.getField(r, c) == 0) {
                     full = false;
                     break;
                 }
@@ -401,12 +421,12 @@ public class GameState {
                 for (int c = 0; c < COLS; c++) {
                     // Slide down all bricks
                     for (int i = r; i < this.top[c]; i++) {
-                        this.field[i][c] = (i + 1 < ROWS) ? this.field[i + 1][c] : 0;
+                        this.setField(i, c, (i + 1 < ROWS) ? this.getField(i + 1, c) : 0);
                     }
 
                     // Lower top
                     this.top[c]--;
-                    while(this.top[c]>=1 && this.field[this.top[c]-1][c] == 0)	{
+                    while(this.top[c]>=1 && this.getField(this.top[c] - 1, c) == 0)	{
                         this.top[c]--;
                     }
                 }
@@ -443,21 +463,35 @@ public class GameState {
         return String.format(
                 "# State \n" + "## field \n" + "%s \n" + "## nextPiece: %d \n" + "## lost: %d \n" + "## turn: %d \n"
                         + "## rowsCleared: %d \n" + "# Derived state \n" + "## top: %s \n\n",
-                this.getPrettyPrintFieldString(this.field), this.nextPiece, this.lost, this.turn, this.rowsCleared,
+                this.field.toString(), this.nextPiece, this.lost, this.turn, this.rowsCleared,
                 Arrays.toString(this.top));
     }
 
-    private String getPrettyPrintFieldString(int[][] field) {
-        List<int[]> fieldClone = Arrays.stream(field).collect(Collectors.toList());
-        Collections.reverse(fieldClone);
-        return String.join("\n", fieldClone.stream().map(x -> Arrays.toString(x)).toArray(String[]::new));
+    // TODO: Restore printing of state
+    // private String getPrettyPrintFieldString(int[][] field) {
+    //     List<int[]> fieldClone = Arrays.stream(field).collect(Collectors.toList());
+    //     Collections.reverse(fieldClone);
+    //     return String.join("\n", fieldClone.stream().map(x -> Arrays.toString(x)).toArray(String[]::new));
+    // }
+
+    private void setField(int row, int col, int value) {
+        int fieldIndex = this.getFieldIndex(row, col);
+        if (value == 0) {
+            this.field.remove(fieldIndex);
+        } else {
+            this.field.put(fieldIndex, value);
+        }
+    }
+    
+    private int getFieldIndex(int row, int col) {
+        return row * COLS + col;
     }
 
     private void refreshTop() {
         for (int c = 0; c < COLS; c++) {
             this.top[c] = 0;
             for (int r = ROWS - 1; r >= 0; r--) { // From top
-                if (this.field[r][c] != 0) {
+                if (this.getField(r, c) != 0) {
                     this.top[c] = r + 1;
                     break;
                 }
