@@ -298,6 +298,15 @@ public class GameState {
         return (totalHeight / COLS);
     }
 
+    public int getMeanHeightDifference() {
+        // Average of the difference between the height of each col and the mean height of the state
+        int meanHeightDifference = 0;
+        for (int c = 0; c < COLS; c++) {
+            meanHeightDifference += Math.abs(getAverageHeightOfCols() - top[c]);
+        }
+        return meanHeightDifference;
+    }
+
     // This heuristic encourages the completion of rows
     public int erodedPieceCells() {
         // Number of rows that cleared x Number of blocks of the variant that got destroyed
