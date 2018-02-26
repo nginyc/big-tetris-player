@@ -95,7 +95,7 @@ public class GameState {
   // Derived variables
   private int[] top = new int[COLS]; // Top filled row of each column
 
-	public GameState(int[][] field, int nextPiece, int lost, int turn) {
+	public GameState(int[][] field, int nextPiece, int lost, int turn, int rowsCleared) {
     // Board field must match COLS and ROWS
     if (field.length != ROWS || field[0].length != COLS) {
       throw new IllegalArgumentException();
@@ -105,6 +105,7 @@ public class GameState {
     this.nextPiece = nextPiece;
     this.lost = lost;
     this.turn = turn;
+    this.rowsCleared = rowsCleared;
 
     this.refreshTop();
   }

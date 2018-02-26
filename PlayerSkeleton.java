@@ -13,7 +13,7 @@ public class PlayerSkeleton {
 	public int[] pickMove(State s) {
 		GameState gameState = new GameState(
 			this.getBoardField(s), s.getNextPiece(), 
-			s.lost ? 1 : 0, s.getTurnNumber()
+			s.lost ? 1 : 0, s.getTurnNumber(), s.getRowsCleared()
 		);
 		int[] move = this.gameStateSearcher.getBestMove(gameState);
 		return move;
