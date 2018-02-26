@@ -7,8 +7,9 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 		(-0.5f) * gameState.getMaxTopHeight() + 
 		(-100f) * gameState.getHolesTotalVolume() +
 		(-10f) * gameState.getBlockadesTotalVolume() +
-		(-10f) * gameState.getBumpiness() +
+		(-10f) * gameState.getBumpiness(1) +
 		(-10f) * gameState.getWells() +
+		(-1f) * gameState.getNumBlocksInField() +
 		//(8f) * gameState.leftColumnEmptyStrategy() +
 		//(0f) * gameState.erodedPieceCells() +
 		(-1000f) * gameState.hasPlayerLost();
