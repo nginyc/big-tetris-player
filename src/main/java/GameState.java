@@ -147,6 +147,7 @@ public class GameState {
     // State variables
     private int[][] field; // As defined in `State`
     private int nextPiece; // As defined in `State`, -1 for not set
+    private int orient = -1; // Orientation of the nextPiece, -1 for not set
     private int lost; // 1 if lost, 0 otherwise  
     private int turn = 0; // Turn count
     private int rowsCleared = 0; // Rows cleared in total
@@ -155,6 +156,8 @@ public class GameState {
     private int numFacesInContactWithEachOther = 0; // Number of contacts between all blocks
     private int numFacesInContactWithWall = 0; // Number of contacts from all blocks to the wall
     private int numFacesInContactWithFloor = 0; // Number of contacts from all blocks to the floor
+    private int bottom = 0; // Row corresponding to bottom of piece after falling
+    private int prevPiece = -1; // Previous piece that was placed, -1 for not set
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
@@ -290,9 +293,11 @@ public class GameState {
         return wellScore;
     }
 
+    // The height where the piece is put (= the height of the column + (the height of the piece / 2))
     public int getLandingHeight() {
-        //TODO
-        return -1;
+        assert this.orient != -1; // orient should be set by makePlayerMove
+        assert this.prevPiece != -1; // orient should be set by makePlayerMove
+        return this.bottom + (P_HEIGHT[this.prevPiece][this.orient] / 2);
     }
     
     public int getAverageHeightOfCols() {
@@ -344,6 +349,7 @@ public class GameState {
 
         this.rowsClearedInCurrentMove = 0;
         int nextPiece = this.nextPiece;
+        this.orient = orient;
         int turn = ++this.turn;
         this.numBlocksInField += P_VOLUME[this.nextPiece];
 
@@ -402,8 +408,10 @@ public class GameState {
             }
         }
 
+        this.prevPiece = this.nextPiece;
         this.nextPiece = -1;
         this.rowsCleared += this.rowsClearedInCurrentMove;
+        this.bottom = bottom;
     }
 
     public void setNextPiece(int piece) {
