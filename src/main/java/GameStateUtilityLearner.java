@@ -7,7 +7,15 @@ import io.jenetics.util.Factory;
 
 public class GameStateUtilityLearner {
 
-	public static int WEIGHTS_COUNT = 6;
+	public int noOfGenerations;
+	public int noOfTriesPerIndividual;
+
+	public static int WEIGHTS_COUNT = 8;
+
+	public GameStateUtilityLearner(int noOfGenerations, int noOfTriesPerIndividual) {
+		this.noOfGenerations = noOfGenerations;
+		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
+	}
 
 	private double getFitness(Genotype<DoubleGene> gt) {
 		double[] weights = this.genotypeToWeights(gt);
@@ -16,16 +24,19 @@ public class GameStateUtilityLearner {
 			throw new IllegalStateException();
 		}
 
-		State s = new State();
 		PlayerSkeleton p = new PlayerSkeleton(weights);
-		while(!s.hasLost()) {
-			int[] move = p.pickMove(s);
-			s.makeMove(move[0], move[1]);
+		
+		double rowsCleared = 0;
+		for (int i = 0; i < this.noOfTriesPerIndividual; i ++) {
+			State s = new State();
+			while(!s.hasLost()) {
+				int[] move = p.pickMove(s);
+				s.makeMove(move[0], move[1]);
+			}
+			rowsCleared += s.getRowsCleared(); 
 		}
 
-		double fitness = s.getRowsCleared(); 
-
-		System.out.println("Evaluated fitness of genotype " + Arrays.toString(weights) + " as " + fitness);
+		double fitness = (double)rowsCleared / this.noOfTriesPerIndividual;
 		
 		return fitness;
 	}
@@ -33,7 +44,7 @@ public class GameStateUtilityLearner {
 	public double[] train() {
 		// Define an individual
 		Factory<Genotype<DoubleGene>> gtf =
-				Genotype.of(DoubleChromosome.of(-1000f, 1000f, WEIGHTS_COUNT));
+				Genotype.of(DoubleChromosome.of(-1d, 1d, WEIGHTS_COUNT));
 
 		// Define engine that takes in the utility function
 		Engine<DoubleGene, Double> engine = Engine
@@ -42,7 +53,7 @@ public class GameStateUtilityLearner {
 
 		// Train!
 		Genotype<DoubleGene> result = engine.stream()
-				.limit(10)
+				.limit(this.noOfGenerations)
 				.collect(EvolutionResult.toBestGenotype());
 
 		double[] bestWeights = this.genotypeToWeights(result);

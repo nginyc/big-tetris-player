@@ -23,10 +23,10 @@ public class PlayerSkeleton {
 		State s = new State();
 		new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			307.85956268705786, -125.48065588885129, -992.92711657553, -113.69050482705222, -218.4353546826212, -392.3555989952125
+			0.37073482618670894, -0.5052451673530609, -0.9856621036908355, -0.592334190301409, -0.11416158721924785, -0.27826905231459276, 0.04908111855531905, -0.06935114340499116
 		});
+
 		while(!s.hasLost()) {
-			System.out.println("Picking next move...");
 			int[] move = p.pickMove(s);
 			s.makeMove(move[0], move[1]);
 			s.draw();
