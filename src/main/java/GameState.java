@@ -415,6 +415,10 @@ public class GameState {
         this.bottom = bottom;
     }
 
+    public int getStateNextPiece() {
+        return this.nextPiece;
+    }
+
     public void setNextPiece(int piece) {
         if (this.nextPiece != -1) {
             throw new IllegalStateException();

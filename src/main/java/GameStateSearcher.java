@@ -9,6 +9,29 @@ public class GameStateSearcher {
     this.utilityFunction = utilityFunction;
   }
 
+  public double searchNLevelsDFS(StateNode node, int searchDepth) {
+    if(searchDepth == 0) {
+      // Leave nodes found. We want to apply utility function on leaf nodes.
+      node.setUtility(utilityFunction.get(node.getGameState()));
+    } else {
+      // Find next game states recursively and perform intermediary node utility aggregation.
+      if(node.getNextStates() == null) {
+        node.findNextGameStates();
+      }
+
+      double bestUtility = -Double.MAX_VALUE;
+      for(StateNode nextState : node.getNextStates()) {
+        double nodeUtility = searchNLevelsDFS(nextState, searchDepth - 1);
+        node.setUtility(node.getUtility() + (1 / node.getNumNextStates() * nodeUtility));
+        if(nodeUtility > bestUtility) {
+          bestUtility = nodeUtility;
+          node.setBestMove(nextState.getPrevMove());
+        }
+      }
+    }
+    return node.getUtility();
+  }
+
   public int[] getBestMove(GameState startGameState) {
     int[][] legalMoves = startGameState.getLegalPlayerMoves();
     // System.out.println(String.format("Evaluating best move for start game state:"));
