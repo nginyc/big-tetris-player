@@ -90,7 +90,8 @@ public class GameState {
   private int nextPiece; // As defined in `State`, -1 for not set
   private int lost; // 1 if lost, 0 otherwise  
   private int turn = 0; // Turn count
-  private int rowsCleared = 0; // Rows cleared
+  private int rowsCleared = 0; // Rows cleared in total
+  private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
 
   // Derived variables
   private int[] top = new int[COLS]; // Top filled row of each column
@@ -137,45 +138,93 @@ public class GameState {
     return this.rowsCleared;
   }
 
+  public int getRowsClearedInCurrentMove() {
+    return this.rowsClearedInCurrentMove;
+  }
+
+  // This heuristic penalizes the volume of the holes
   public int getHolesTotalVolume() {
     int holes = 0;
     for (int c = 0; c < COLS; c++) {
-      int r = top[c];
-      if (r == 0) continue;
-      for (int i = r - 1; i >= 0; i--) {
-        if (field[i][c] == 0) {
-          holes++;
-        }
-      }
+      if (top[c] == 0) continue;
+      holes += getHolesAt(c);
     }
     return holes;
   }
 
+  private int getHolesAt(int c) {
+    int count = 0;
+    for (int i = top[c] - 1; i >= 0; i--) {
+      if (field[i][c] == 0) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // This heuristic penalizes deepness of the holes
   public int getBlockadesTotalVolume() {
-    int potentialBlockades = 0;
     int blockades = 0;
     for (int c = 0; c < COLS; c++) {
-      potentialBlockades = 0;
-      int r = top[c];
-      if (r == 0) continue;
-      for (int i = r - 1; i >= 0; i--) {
-        if (field[i][c] != 0) {
-          potentialBlockades++;
-        } else {
-          blockades += potentialBlockades;
-          potentialBlockades = 0;
-        }
+      if (top[c] == 0) continue;
+      blockades += getBlockadeAt(c);
+    }
+    return blockades;
+  }
+
+  private int getBlockadeAt(int c) {
+    int potentialBlockades = 0;
+    int blockades = 0;
+    for (int i = top[c] - 1; i >= 0; i--) {
+      if (field[i][c] != 0) {
+        potentialBlockades++;
+      } else {
+        blockades += potentialBlockades;
+        potentialBlockades = 0;
       }
     }
     return blockades;
   }
 
+  // This heuristic encourages smoothness of the "terrain" (TOP only)
   public int getBumpiness() {
     int bumpiness = 0;
     for (int c = 0; c < COLS - 1; c++) {
       bumpiness += Math.abs(top[c] - top[c + 1]);
     }
     return bumpiness;
+  }
+
+  // This heuristic discourages formation of wells
+  // Wells is defined as a 1-block wide valley.
+  public int getWells() {
+    int wellScore = 0;
+    if (top[0] < top[1]) {
+      wellScore += Math.pow(top[0] - top[1], 2);
+    }
+    for (int c = 1; c < COLS - 1; c++) {
+      if (top[c - 1] > top[c] && top[c + 1] > top[c]) {
+        wellScore += Math.pow(Math.min(top[c - 1], top[c + 1]) - top[c], 2);
+      }
+    }
+    if (top[COLS - 1] < top[COLS - 2]) {
+      wellScore += Math.pow(top[COLS - 1] - top[COLS - 2], 2);
+    }
+    return wellScore;
+  }
+
+  // This heuristic encourages the completion of rows
+  public int erodedPieceCells() {
+    System.out.println(nextPiece);
+    return rowsClearedInCurrentMove;
+  }
+
+  public int leftColumnEmptyStrategy() {
+    if (top[0] < top[1] + 2 && nextPiece == 1) {
+      return 1;
+    } else {
+      return -1;
+    }
   }
 
   /////////////////////////////////////////////////////////////////
@@ -189,6 +238,7 @@ public class GameState {
       throw new IllegalStateException();
     }
 
+    this.rowsClearedInCurrentMove = 0;
     int nextPiece = this.nextPiece;
     int turn = ++this.turn;
 
@@ -232,7 +282,7 @@ public class GameState {
 
       // If the row was full - remove it and slide above stuff down
 			if (full) {
-        this.rowsCleared++;
+        this.rowsClearedInCurrentMove++;
 				// For each column
 				for(int c = 0; c < COLS; c++) {
 					// Slide down all bricks
@@ -247,6 +297,7 @@ public class GameState {
     }
 		
     this.nextPiece = -1;
+    this.rowsCleared += this.rowsClearedInCurrentMove;
   }
 
   public void setNextPiece(int piece) {
