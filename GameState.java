@@ -290,6 +290,11 @@ public class GameState {
         return wellScore;
     }
 
+    public int getLandingHeight() {
+        //TODO
+        return -1;
+    }
+
     // This heuristic encourages the completion of rows
     public int erodedPieceCells() {
         // Number of rows that cleared x Number of blocks of the variant that got destroyed
