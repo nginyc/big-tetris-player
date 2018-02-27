@@ -89,3 +89,8 @@ GameStateUtilityLearner explorer = new GameStateUtilityLearner(
 GameStateUtilityLearner validator = new GameStateUtilityLearner(
     10, 100, 100, 0.05, 0.8, 0.1
 );
+
+With d=2 state space search
+
+You have completed 16591 rows.
+BUILD SUCCESSFUL in 16m 52s
