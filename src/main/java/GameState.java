@@ -114,6 +114,33 @@ public class GameState {
 
     //all legal moves - first index is piece type - then a list of 2-length arrays
     public static int[][][] LEGAL_MOVES = null;
+    static {
+        // Initialize this only ONCE
+        if (LEGAL_MOVES == null) {
+            LEGAL_MOVES = new int[N_PIECES][][];
+            //for each piece type
+            for (int i = 0; i < N_PIECES; i++) {
+                //figure number of legal moves
+                int n = 0;
+                for (int j = 0; j < P_ORIENTS[i]; j++) {
+                    //number of locations in this orientation
+                    n += COLS + 1 - P_WIDTH[i][j];
+                }
+                //allocate space
+                LEGAL_MOVES[i] = new int[n][2];
+                //for each orientation
+                n = 0;
+                for (int j = 0; j < P_ORIENTS[i]; j++) {
+                    //for each slot
+                    for (int k = 0; k < COLS + 1 - P_WIDTH[i][j]; k++) {
+                        LEGAL_MOVES[i][n][ORIENT] = j;
+                        LEGAL_MOVES[i][n][SLOT] = k;
+                        n++;
+                    }
+                }
+            }
+        }
+    }
 
     // State variables
     private HashSet<Integer> field; // Whether field at index is occupied
@@ -128,6 +155,7 @@ public class GameState {
     private int numFacesInContactWithWall = 0; // Number of contacts from all blocks to the wall
     private int numFacesInContactWithFloor = 0; // Number of contacts from all blocks to the floor
     private int bottom = 0; // Row corresponding to bottom of piece after falling
+    private int columnAggregateHeight = 0;
     private int prevPiece; // Previous piece that was placed, -1 for not set
 
     // Derived variables
@@ -188,8 +216,8 @@ public class GameState {
 
     ///////////////////////// Heuristics ////////////////////////////
 
-    public int getAggregateHeight() {
-        return Arrays.stream(top).sum();
+    public int getColumnAggregateHeight() {
+        return this.columnAggregateHeight;
     }
 
     public int getMaxTopHeight() {
@@ -430,7 +458,9 @@ public class GameState {
 
         // Adjust top
         for (int c = 0; c < P_WIDTH[nextPiece][orient]; c++) {
-            this.top[slot + c] = bottom + P_TOP[nextPiece][orient][c];
+            int newTop = bottom + P_TOP[nextPiece][orient][c];
+            columnAggregateHeight += newTop - this.top[slot + c];
+            this.top[slot + c] = newTop;
         }
 
         // Check for full rows and clear them
@@ -458,8 +488,10 @@ public class GameState {
 
                     // Lower top
                     this.top[c]--;
-                    while(this.top[c]>=1 && this.getField(this.top[c] - 1, c) == 0)	{
+                    this.columnAggregateHeight --;
+                    while(this.top[c] >= 1 && this.getField(this.top[c] - 1, c) == 0)	{
                         this.top[c]--;
+                        this.columnAggregateHeight --;
                     }
                 }
             }
@@ -487,32 +519,6 @@ public class GameState {
     public int[][] getLegalPlayerMoves() {
         if (this.nextPiece == -1) {
             throw new IllegalStateException();
-        }
-
-        // Initialize this only ONCE
-        if (LEGAL_MOVES == null) {
-            LEGAL_MOVES = new int[N_PIECES][][];
-            //for each piece type
-            for (int i = 0; i < N_PIECES; i++) {
-                //figure number of legal moves
-                int n = 0;
-                for (int j = 0; j < P_ORIENTS[i]; j++) {
-                    //number of locations in this orientation
-                    n += COLS + 1 - P_WIDTH[i][j];
-                }
-                //allocate space
-                LEGAL_MOVES[i] = new int[n][2];
-                //for each orientation
-                n = 0;
-                for (int j = 0; j < P_ORIENTS[i]; j++) {
-                    //for each slot
-                    for (int k = 0; k < COLS + 1 - P_WIDTH[i][j]; k++) {
-                        LEGAL_MOVES[i][n][ORIENT] = j;
-                        LEGAL_MOVES[i][n][SLOT] = k;
-                        n++;
-                    }
-                }
-            }
         }
 
         return LEGAL_MOVES[this.nextPiece];
