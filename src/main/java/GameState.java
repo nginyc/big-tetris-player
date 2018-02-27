@@ -368,19 +368,60 @@ public class GameState {
     // This heuristic encourages the completion of rows
     public int erodedPieceCells() {
         // Number of rows that cleared x Number of blocks of the variant that got destroyed
-        return -1;
+        if (rowsClearedInCurrentMove > 0) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
-    public int numEdgesTouchingAnotherBlock() {
-        return -1;
+    public int getNumEdgesTouchingAnotherBlock() {
+        int count = 0;
+        for (int c = 0; c < COLS; c++) {
+            for (int r = 0; r < top[c]; r++) {
+                if (field[r][c] != 0) {
+                    if (c < COLS - 1 && field[r][c + 1] != 0) {
+                        count++;
+                    }
+                    if (r < ROWS - 1 && field[r + 1][c] != 0) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
-    public int numEdgesTouchingTheWall() {
-        return -1;
+    public int getNumEdgesTouchingCeiling() {
+        int count = 0;
+        for (int c = 0; c < COLS; c++) {
+            if (field[ROWS - 1][c] != 0) {
+                count++;
+            }
+        }
+        return count;
     }
 
-    public int numEdgesTouchingTheFloor() {
-        return -1;
+    public int getNumEdgesTouchingTheWall() {
+        int count = 0;
+        for (int c = 0; c < COLS; c += COLS - 1) {
+            for (int r = 0; r < ROWS; r++) {
+                if (field[r][c] != 0) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public int getNumEdgesTouchingTheFloor() {
+        int count = 0;
+        for (int c = 0; c < COLS; c++) {
+            if (field[0][c] != 0) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /////////////////////////////////////////////////////////////////
