@@ -5,8 +5,6 @@ public class GameState {
     public static final int COLS = 10;
     public static final int ROWS = 20;
 
-    // TODO: Refactor definition of piece vocab if necessary
-
     public static final int N_PIECES = 7;
     public static final int ORIENT = 0;
     public static final int SLOT = 1;
@@ -114,38 +112,11 @@ public class GameState {
         } 
     };
 
-    // TODO: Refactor definition of legal moves if necessary
-
     //all legal moves - first index is piece type - then a list of 2-length arrays
-    public static int[][][] LEGAL_MOVES = new int[N_PIECES][][];
-
-    //initialize legalMoves
-    {
-        //for each piece type
-        for (int i = 0; i < N_PIECES; i++) {
-            //figure number of legal moves
-            int n = 0;
-            for (int j = 0; j < P_ORIENTS[i]; j++) {
-                //number of locations in this orientation
-                n += COLS + 1 - P_WIDTH[i][j];
-            }
-            //allocate space
-            LEGAL_MOVES[i] = new int[n][2];
-            //for each orientation
-            n = 0;
-            for (int j = 0; j < P_ORIENTS[i]; j++) {
-                //for each slot
-                for (int k = 0; k < COLS + 1 - P_WIDTH[i][j]; k++) {
-                    LEGAL_MOVES[i][n][ORIENT] = j;
-                    LEGAL_MOVES[i][n][SLOT] = k;
-                    n++;
-                }
-            }
-        }
-    }
+    public static int[][][] LEGAL_MOVES = null;
 
     // State variables
-    private HashMap<Integer, Integer> field; // Mapping from field index to turn no., not occupied if it doesn't exist
+    private HashSet<Integer> field; // Whether field at index is occupied
     private int nextPiece; // As defined in `State`, -1 for not set
     private int orient = -1; // Orientation of the nextPiece, -1 for not set
     private int lost; // 1 if lost, 0 otherwise  
@@ -163,7 +134,7 @@ public class GameState {
     private int[] top = new int[COLS]; // Top filled row of each column
 
     public GameState() {
-        this.field = new HashMap<Integer, Integer>();
+        this.field = new HashSet<>();
         this.nextPiece = -1; // Not set
         this.lost = 0;
         this.turn = 0;
@@ -171,7 +142,7 @@ public class GameState {
     }
 
     private void populateField(int[][] field) {
-        this.field = new HashMap<>();
+        this.field = new HashSet<>();
         for (int r = 0; r < ROWS; r ++) {
             for (int c = 0; c < COLS; c ++) {
                 this.setField(r, c, field[r][c]);
@@ -185,7 +156,7 @@ public class GameState {
             throw new IllegalArgumentException();
         }
 
-        this.field = new HashMap<Integer, Integer>();
+        this.field = new HashSet<>();
         this.nextPiece = nextPiece;
         this.prevPiece = nextPiece; // To store next piece when it is cleared
         this.lost = lost;
@@ -196,7 +167,7 @@ public class GameState {
         this.refreshTop();
     }
 
-    private GameState(HashMap<Integer, Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
+    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.prevPiece = nextPiece;
@@ -207,7 +178,7 @@ public class GameState {
     }
 
     public GameState clone() {
-        HashMap<Integer, Integer> fieldClone = new HashMap<Integer, Integer>(this.field);
+        HashSet<Integer> fieldClone = new HashSet<>(this.field);
         int[] topClone = Arrays.stream(this.top).toArray();
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
@@ -409,7 +380,7 @@ public class GameState {
 
     public int getField(int row, int col) {
         int fieldIndex = getFieldIndex(row, col);
-        Integer cell = field.get(fieldIndex);
+        Integer cell = field.contains(fieldIndex) ? 1 : 0;
         return (cell == null) ? 0 : cell;
     }
 
@@ -517,6 +488,32 @@ public class GameState {
             throw new IllegalStateException();
         }
 
+        // Initialize this only ONCE
+        if (LEGAL_MOVES == null) {
+            LEGAL_MOVES = new int[N_PIECES][][];
+            //for each piece type
+            for (int i = 0; i < N_PIECES; i++) {
+                //figure number of legal moves
+                int n = 0;
+                for (int j = 0; j < P_ORIENTS[i]; j++) {
+                    //number of locations in this orientation
+                    n += COLS + 1 - P_WIDTH[i][j];
+                }
+                //allocate space
+                LEGAL_MOVES[i] = new int[n][2];
+                //for each orientation
+                n = 0;
+                for (int j = 0; j < P_ORIENTS[i]; j++) {
+                    //for each slot
+                    for (int k = 0; k < COLS + 1 - P_WIDTH[i][j]; k++) {
+                        LEGAL_MOVES[i][n][ORIENT] = j;
+                        LEGAL_MOVES[i][n][SLOT] = k;
+                        n++;
+                    }
+                }
+            }
+        }
+
         return LEGAL_MOVES[this.nextPiece];
     }
 
@@ -545,7 +542,7 @@ public class GameState {
         if (value == 0) {
             this.field.remove(fieldIndex);
         } else {
-            this.field.put(fieldIndex, value);
+            this.field.add(fieldIndex);
         }
     }
     
