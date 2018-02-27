@@ -21,22 +21,22 @@ public class PlayerSkeleton {
 
 	public static void main(String[] args) {
 		State s = new State();
-		new TFrame(s);
+		// new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			-0.3208433615384241, -0.11081195413475875, -0.9605866492448987, -0.17979304088323622, -0.14854310222244482, -0.10959924803520749, -0.054347037107380425	
+			-0.3833217021335531, -0.2991216095851814, -0.9033648455277214, -0.06417739912016285, -0.07057842371336309, -0.09208476184731196, -0.018568446747041722, -0.2, -0.2, -0.4, -0.1
 		});
 
 		
 		while(!s.hasLost()) {
 			int[] move = p.pickMove(s);
 			s.makeMove(move[0], move[1]);
-			s.draw();
-			s.drawNext(0,0);
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			// s.draw();
+			// s.drawNext(0,0);
+			// try {
+			// 	Thread.sleep(10);
+			// } catch (InterruptedException e) {
+			// 	e.printStackTrace();
+			// }
 		}
 		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 	}

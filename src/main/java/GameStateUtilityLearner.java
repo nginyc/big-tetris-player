@@ -8,7 +8,7 @@ import io.jenetics.util.Factory;
 
 public class GameStateUtilityLearner {
 
-	public static int CUTOFF_STEADY_FITNESS_GENERATIONS = 100; 
+	public static int CUTOFF_STEADY_FITNESS_GENERATIONS = 20; 
 	private int noOfTriesPerIndividual;
 	private int populationSize; 
 	private float mutationProb;
@@ -17,7 +17,7 @@ public class GameStateUtilityLearner {
 	private float meanAltererProb;
 	private float crossoverProb;
 
-	public static int WEIGHTS_COUNT = 9;
+	public static int WEIGHTS_COUNT = 11;
 
 	public GameStateUtilityLearner(int noOfTriesPerIndividual, int populationSize, 
 		float mutationProb, int tournamentSampleSize,
@@ -71,7 +71,7 @@ public class GameStateUtilityLearner {
 				)
 				.survivorsFraction(this.survivorsFraction)
 				.alterers(
-					new UniformCrossover(this.crossoverProb),
+					new UniformCrossover<>(this.crossoverProb),
 					new MeanAlterer<>(this.meanAltererProb),
 					new Mutator<>(this.mutationProb)
 				)
