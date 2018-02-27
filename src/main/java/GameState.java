@@ -425,6 +425,10 @@ public class GameState {
             throw new IllegalStateException();
         }
 
+        if (this.lost == 1) {
+            return; // Lost already la
+        }
+
         int nextPiece = this.nextPiece;
         this.orient = orient;
         int turn = ++this.turn;
@@ -439,6 +443,7 @@ public class GameState {
         // Check if game ended
         if (bottom + P_HEIGHT[nextPiece][orient] > ROWS) {
             this.lost = 1;
+            this.nextPiece = -1;
             return;
         }
 
