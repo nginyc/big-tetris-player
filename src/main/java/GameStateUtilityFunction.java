@@ -3,7 +3,7 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 	private double[] weights;
 
 	public GameStateUtilityFunction(double[] weights) {
-		if (weights.length != 8) {
+		if (weights.length != 9) {
 			throw new IllegalArgumentException();
 		}
 
@@ -23,6 +23,7 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 			weights[4] * gameState.getBumpiness(1) +
 			weights[5] * gameState.getWells(2) +
 			weights[6] * gameState.getNumBlocksInField() +
-			weights[7] * gameState.getMeanHeightDifference();
+			weights[7] * gameState.getMeanHeightDifference() +
+			weights[8] * gameState.getLandingHeight();
 	}
 }

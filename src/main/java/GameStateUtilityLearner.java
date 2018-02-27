@@ -17,7 +17,7 @@ public class GameStateUtilityLearner {
 	private float meanAltererProb;
 	private float crossoverProb;
 
-	public static int WEIGHTS_COUNT = 8;
+	public static int WEIGHTS_COUNT = 9;
 
 	public GameStateUtilityLearner(int noOfTriesPerIndividual, int populationSize, 
 		float mutationProb, int tournamentSampleSize,
@@ -71,6 +71,7 @@ public class GameStateUtilityLearner {
 				)
 				.survivorsFraction(this.survivorsFraction)
 				.alterers(
+					new UniformCrossover(this.crossoverProb),
 					new MeanAlterer<>(this.meanAltererProb),
 					new Mutator<>(this.mutationProb)
 				)
