@@ -25,9 +25,9 @@ public class PlayerSkeleton {
 		State s = new State();
 		// new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			-0.05003735941143013, -0.48261561045736473, -0.7763113177941997, -0.18716846125266753
+			0.44434135395361885, 0.8117001403213164, 0.047147956300193195, 0.7396052257856431, 0.3493358550139455, 0.3792102040425659, 0.0762387008863219, 0.04941063287026368
 		});
-		
+
 		while(!s.hasLost()) {
 			int[] move = p.pickMove(s);
 			s.makeMove(move[0], move[1]);

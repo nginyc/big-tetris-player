@@ -66,6 +66,17 @@ Best phenotype of generation 16 has fitness 3172.65 with weights [-0.05003735941
 Best phenotype of generation 5 has fitness 2808.15 with weights [108.86706719948505, 0.5665333073435306, 79.38349426947018, 0.03913416549413778, 0.6468846132697939, 0.13518943642644166]
 Best learner params: [108.86706719948505, 0.5665333073435306, 79.38349426947018, 0.03913416549413778, 0.6468846132697939, 0.13518943642644166]
 
-+ 2-level search
 
 
+After implementing own GA:
+
+Best phenotype of generation 25 has fitness 7405.3 with weights [0.45450711516497366, 0.7996323218957114, 0.056208922452806766, 0.7417362912805037, 0.37466061682423224, 0.3744167227771637, 0.07039707761413969, 0.06783983260926996]
+<=========----> 75% EXECUTING [55m 39s]
+
+GameStateUtilityLearner explorer = new GameStateUtilityLearner(
+    3, 100, 10, 0.01, 0.2, 0.6
+);
+
+GameStateUtilityLearner validator = new GameStateUtilityLearner(
+    10, 100, 100, 0.05, 0.8, 0.1
+);

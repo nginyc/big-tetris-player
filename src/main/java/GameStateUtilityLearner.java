@@ -1,34 +1,45 @@
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import org.apache.commons.math3.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 public class GameStateUtilityLearner {
 
 	private double[][] population;
-	private double[] individualsFitness;
+	private final double[] individualsFitness;
 	private HashSet<Integer> individualsSelected;
 	private ArrayList<Integer> individualsSelectedList;
+	private Object[] individualsTaskFutures;
 	private double totalFitness = 0;
 
 	private int noOfTriesPerIndividual;
 	private int noOfGenerations;
 	private int populationSize; 
 	private double mutationProb;
+	private double selectedFraction;
+	private double tournamentSampleRatio;
+	private ExecutorService executor;
 
-	public static int WEIGHTS_COUNT = 4;
+	public static int WEIGHTS_COUNT = 8;
+	public static int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
 	public GameStateUtilityLearner(int noOfTriesPerIndividual, int noOfGenerations,
-		int populationSize, double mutationProb) {
+		int populationSize, double mutationProb, double selectedFraction, double tournamentSampleRatio) {
 		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
 		this.noOfGenerations = noOfGenerations;
 		this.populationSize = populationSize;
 		this.mutationProb = mutationProb;
+		this.tournamentSampleRatio = tournamentSampleRatio;
+		this.selectedFraction = selectedFraction;
 
 		this.population = new double[this.populationSize][WEIGHTS_COUNT];
 		this.individualsFitness = new double[this.populationSize];
 		this.individualsSelected = new HashSet<>(this.populationSize);
 		this.individualsSelectedList = new ArrayList<>(this.populationSize);
+		this.individualsTaskFutures = new Object[this.populationSize];
 	}
 
 	private double getFitness(double[] weights) {
@@ -62,32 +73,71 @@ public class GameStateUtilityLearner {
 		return Math.min(Math.max(0, dist.sample()), 1);
 	}
 
-	private void initPopulation(double[] initialWeights) {
-		// Randomly initialize each individual based on initial weights
-		for (int i = 0; i < this.populationSize; i ++) {
+	private void initPopulation(double[][] initialWeightsSet) {
+		// In order, each initial weight gets to randomly influence an individual 
+		int i = 0;
+		while (i < this.populationSize) {
+			double[] initialWeights = initialWeightsSet[i % initialWeightsSet.length];
 			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
 				double w = initialWeights[j];
 				// Do gaussian mutation on every weight
 				this.population[i][j] = this.doGaussianMutation(w, 0f, 1f);
 			}
+			i++;
 		}
 	}
 	
-	private void doRouletteWheelSelection() {
+	private void doTournamentSelection() {
 		this.individualsSelected.clear();
 		this.individualsSelectedList.clear();
-		for (int i = 0; i < this.populationSize; i ++) {
-			double fitness = this.individualsFitness[i];
-			if (Math.random() < fitness / totalFitness) {
-				this.individualsSelected.add(i);
-				this.individualsSelectedList.add(i);
-			} 
+
+		while (this.individualsSelectedList.size() < this.populationSize * selectedFraction) {
+			int winnerIndex = -1;
+			double bestIndividualFitness = -Double.MAX_VALUE;
+			
+			// Randomly choose tournament sample and compare against best individual so far
+			for (int i = 0; i < this.populationSize * selectedFraction * tournamentSampleRatio; i ++) {
+				int candidateIndex = (int)(Math.random() * this.populationSize);
+				double candidateFitness = this.individualsFitness[candidateIndex];
+				if (candidateFitness > bestIndividualFitness) {
+					bestIndividualFitness = candidateFitness;
+					winnerIndex = candidateIndex;
+				}
+			}
+
+			this.individualsSelected.add(winnerIndex);
+			this.individualsSelectedList.add(winnerIndex);
 		}
 	}
 
 	private void evaluatePopulationFitness() {
 		for (int i = 0; i < this.populationSize; i ++) {
-			this.individualsFitness[i] = this.getFitness(this.population[i]);
+			final double[] individual = this.population[i];
+			this.individualsTaskFutures[i] = executor.submit(() -> {
+				return this.getFitness(individual);
+			});
+		}
+
+		double min = Double.MAX_VALUE;
+		for (int i = 0; i < this.populationSize; i ++) {
+			try {
+				Future<Double> future = (Future<Double>)this.individualsTaskFutures[i];
+				this.individualsFitness[i] = future.get();
+				if (this.individualsFitness[i] < min) {
+					min = this.individualsFitness[i];
+				}
+			} catch (ExecutionException error) {
+				throw new Error("Execution exception reached.");
+			} catch (InterruptedException error) {
+				throw new Error("Interrupted exception reached.");
+			}
+		}
+
+		// Ensure that all fitness scores are positive
+		this.totalFitness = 0;
+		for (int i = 0; i < this.populationSize; i ++) {
+			this.individualsFitness[i] = this.individualsFitness[i] + min;
+			this.totalFitness += this.individualsFitness[i];
 		}
 	}
 
@@ -102,9 +152,9 @@ public class GameStateUtilityLearner {
 				double[] p1 = this.population[p1Index];
 				double[] p2 = this.population[p2Index];
 
-				double p1Fitness = this.getFitness(p1);
-				double p2Fitness = this.getFitness(p2);
-				double ratio = p1Fitness / (p1Fitness + p2Fitness);
+				double p1Fitness = this.individualsFitness[p1Index];
+				double p2Fitness = this.individualsFitness[p2Index];
+				double ratio = (p1Fitness == 0) ? 0 : p1Fitness / (p1Fitness + p2Fitness);
 				for (int j = 0; j < WEIGHTS_COUNT; j ++) {
 					this.population[i][j] = ratio * p1[j] + (1 - ratio) * p2[j];
 				} 
@@ -116,7 +166,7 @@ public class GameStateUtilityLearner {
 		for (int i = 0; i < this.populationSize; i ++) {
 			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
 				if (Math.random() < this.mutationProb) {
-					this.population[i][j] = Math.random();
+					this.population[i][j] = doGaussianMutation(this.population[i][j], 0, 1);
 				}
 			}  
 		}
@@ -128,15 +178,17 @@ public class GameStateUtilityLearner {
 		for (int i = 0; i < WEIGHTS_COUNT; i ++) {
 			weights[i] = Math.random();
 		}
-		return train(weights);
+		return train(new double[][] { weights });
 	}
 
-	public double[] train(double[] initialWeights) {
+	public double[] train(double[][] initialWeights) {
+		executor = Executors.newFixedThreadPool(MAX_THREAD_COUNT);
+
 		this.initPopulation(initialWeights);
 
 		for (int g = 0; g < this.noOfGenerations; g ++) {
 			this.evaluatePopulationFitness();
-			this.doRouletteWheelSelection();
+			this.doTournamentSelection();
 			this.doWeightedAverageCrossover();
 			this.doRandomMutation();
 			prettyPrintGeneration(g);
@@ -151,6 +203,8 @@ public class GameStateUtilityLearner {
 				bestFitness = this.individualsFitness[i];
 			} 
 		}
+
+		executor.shutdown();
 
 		return bestWeights;
 	}    
@@ -170,9 +224,9 @@ public class GameStateUtilityLearner {
 	}
 
 	private void prettyPrintGeneration(int generation) {
-		int bestIndividualIndex = this.getBestIndividualIndex();
-		double fitness = this.individualsFitness[bestIndividualIndex];
-		double[] bestIndividual = this.population[bestIndividualIndex];
+		int winnerIndex = this.getBestIndividualIndex();
+		double fitness = this.individualsFitness[winnerIndex];
+		double[] bestIndividual = this.population[winnerIndex];
 		System.out.println("Best phenotype of generation " + generation +
 			" has fitness " + fitness + " with weights " + Arrays.toString(bestIndividual));
 	}

@@ -2,15 +2,38 @@ import java.util.Arrays;
 
 public class PlayerTrainer {
 
+	public static int CANDIDATE_COUNT = 50;
+
 	public PlayerTrainer() {
 	}
 
 	public static void main(String[] args) {
-		GameStateUtilityLearner learner = new GameStateUtilityLearner(
-			10, 10, 100, 0.05
+
+		double[][] candidates = new double[CANDIDATE_COUNT][];
+
+		// Idea: focus on exploration first
+		// Low computation time
+		// Converge quickly to a local maxima
+		GameStateUtilityLearner explorer = new GameStateUtilityLearner(
+			3, 100, 10, 0.01, 0.2, 0.6
+		);
+		for (int i = 0; i < CANDIDATE_COUNT; i ++) {
+			candidates[i] = explorer.train();
+			System.out.println("Candidate " + i + ": " + Arrays.toString(candidates[i]));
+		}
+
+		System.out.println("Validating candidates...");
+
+		// Idea: focus on exploitation
+		// High computation time to thoroughly validate correctness 
+		// More crossovers between multiple viable parents
+		// Lower selection pressure to allow multiple viable parents
+		GameStateUtilityLearner validator = new GameStateUtilityLearner(
+			10, 100, 100, 0.05, 0.8, 0.1
 		);
 
-		double[] weights = learner.train(new double[] { 0.4196536509730699, 0.48691656577614023, 0.4990965922288645, 0.13582579792757876 });
+		double[] weights = validator.train(candidates);
+
 		System.out.println("Best utility func weights: " + Arrays.toString(weights));
 	}
 }
