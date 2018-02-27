@@ -1,39 +1,37 @@
 import java.util.*;
 
-import io.jenetics.*;
-import io.jenetics.engine.Engine;
-import io.jenetics.engine.EvolutionResult;
-import io.jenetics.engine.Limits;
-import io.jenetics.util.Factory;
+import org.apache.commons.math3.*;
+import org.apache.commons.math3.distribution.NormalDistribution;
 
 public class GameStateUtilityLearner {
 
-	public static int CUTOFF_STEADY_FITNESS_GENERATIONS = 20; 
+	private double[][] population;
+	private double[] individualsFitness;
+	private HashSet<Integer> individualsSelected;
+	private ArrayList<Integer> individualsSelectedList;
+	private double totalFitness = 0;
+
 	private int noOfTriesPerIndividual;
+	private int noOfGenerations;
 	private int populationSize; 
-	private float mutationProb;
-	private int tournamentSampleSize;
-	private float survivorsFraction;
-	private float meanAltererProb;
-	private float crossoverProb;
+	private double mutationProb;
 
-	public static int WEIGHTS_COUNT = 11;
+	public static int WEIGHTS_COUNT = 4;
 
-	public GameStateUtilityLearner(int noOfTriesPerIndividual, int populationSize, 
-		float mutationProb, int tournamentSampleSize,
-		float survivorsFraction, float meanAltererProb, float crossoverProb) {
+	public GameStateUtilityLearner(int noOfTriesPerIndividual, int noOfGenerations,
+		int populationSize, double mutationProb) {
 		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
+		this.noOfGenerations = noOfGenerations;
 		this.populationSize = populationSize;
 		this.mutationProb = mutationProb;
-		this.tournamentSampleSize = tournamentSampleSize;
-		this.survivorsFraction = survivorsFraction;
-		this.meanAltererProb = meanAltererProb;
-		this.crossoverProb = crossoverProb;
+
+		this.population = new double[this.populationSize][WEIGHTS_COUNT];
+		this.individualsFitness = new double[this.populationSize];
+		this.individualsSelected = new HashSet<>(this.populationSize);
+		this.individualsSelectedList = new ArrayList<>(this.populationSize);
 	}
 
-	private double getFitness(Genotype<DoubleGene> gt) {
-		double[] weights = this.genotypeToWeights(gt);
-
+	private double getFitness(double[] weights) {
 		if (weights.length != WEIGHTS_COUNT) {
 			throw new IllegalStateException();
 		}
@@ -48,7 +46,8 @@ public class GameStateUtilityLearner {
 				// Randomly get a piece
 				int nextPiece = gameState.getRandomNextPiece();
 				gameState.setNextPiece(nextPiece);
-				int[] move = gameStateSearcher.getBestMove(gameState);
+				GameStateSearcher.BestMoveResult result = gameStateSearcher.searchNLevelsDFS(gameState, 1);
+				int[] move = result.move;
 				gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT]);
 			}
 			rowsCleared += gameState.getRowsCleared(); 
@@ -58,53 +57,123 @@ public class GameStateUtilityLearner {
 		return fitness;
 	}
 
-	public double[] train() {
-		// Define an individual
-		Factory<Genotype<DoubleGene>> gtf =
-				Genotype.of(DoubleChromosome.of(-1d, 1d, WEIGHTS_COUNT));
+	private double doGaussianMutation(double x, double min, double max) {
+		NormalDistribution dist = new NormalDistribution(x, (max - min) / 10);
+		return Math.min(Math.max(0, dist.sample()), 1);
+	}
 
-		// Define engine that takes in the utility function
-		Engine<DoubleGene, Double> engine = Engine
-				.builder(this::getFitness, gtf)
-				.survivorsSelector(
-					new TournamentSelector<>(this.tournamentSampleSize)
-				)
-				.survivorsFraction(this.survivorsFraction)
-				.alterers(
-					new UniformCrossover<>(this.crossoverProb),
-					new MeanAlterer<>(this.meanAltererProb),
-					new Mutator<>(this.mutationProb)
-				)
-				.populationSize(this.populationSize)
-				.build();
-
-		// Train!
-		Genotype<DoubleGene> result = engine.stream()
-				.limit(Limits.bySteadyFitness(CUTOFF_STEADY_FITNESS_GENERATIONS))
-				.map(x -> {
-					prettyPrintGeneration(x);
-					return x;
-				})
-				.collect(EvolutionResult.toBestGenotype());
-
-		double[] bestWeights = this.genotypeToWeights(result);
-
-		return bestWeights;
-	}       
-
-	private void prettyPrintGeneration(EvolutionResult<DoubleGene, Double> result) {
-		Phenotype<DoubleGene, Double> phenotype = result.getBestPhenotype();
-		long generationCount = phenotype.getGeneration();
-		double fitness = phenotype.getFitness();
-		Genotype<DoubleGene> genotype = phenotype.getGenotype();
-		double[] weights = this.genotypeToWeights(genotype);
-		System.out.println("Best phenotype of generation " + generationCount +
-			" has fitness " + fitness + " with weights " + Arrays.toString(weights));
+	private void initPopulation(double[] initialWeights) {
+		// Randomly initialize each individual based on initial weights
+		for (int i = 0; i < this.populationSize; i ++) {
+			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+				double w = initialWeights[j];
+				// Do gaussian mutation on every weight
+				this.population[i][j] = this.doGaussianMutation(w, 0f, 1f);
+			}
+		}
 	}
 	
-	private double[] genotypeToWeights(Genotype<DoubleGene> gt) {
-		double[] weights = gt.stream().flatMap(x -> x.stream())
-			.map(x -> x.doubleValue()).mapToDouble(x -> x).toArray();
-		return weights;
+	private void doRouletteWheelSelection() {
+		this.individualsSelected.clear();
+		this.individualsSelectedList.clear();
+		for (int i = 0; i < this.populationSize; i ++) {
+			double fitness = this.individualsFitness[i];
+			if (Math.random() < fitness / totalFitness) {
+				this.individualsSelected.add(i);
+				this.individualsSelectedList.add(i);
+			} 
+		}
+	}
+
+	private void evaluatePopulationFitness() {
+		for (int i = 0; i < this.populationSize; i ++) {
+			this.individualsFitness[i] = this.getFitness(this.population[i]);
+		}
+	}
+
+	private void doWeightedAverageCrossover() {
+		int selectedCount = this.individualsSelectedList.size();
+		for (int i = 0; i < this.populationSize; i ++) {
+			// If individual has been eliminated
+			if (!this.individualsSelected.contains(i)) {
+				// Get 2 other random selected individual as parents
+				int p1Index = this.individualsSelectedList.get((int)(Math.random() * selectedCount));
+				int p2Index = this.individualsSelectedList.get((int)(Math.random() * selectedCount));
+				double[] p1 = this.population[p1Index];
+				double[] p2 = this.population[p2Index];
+
+				double p1Fitness = this.getFitness(p1);
+				double p2Fitness = this.getFitness(p2);
+				double ratio = p1Fitness / (p1Fitness + p2Fitness);
+				for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+					this.population[i][j] = ratio * p1[j] + (1 - ratio) * p2[j];
+				} 
+			}
+		}
+	}
+
+	private void doRandomMutation() {
+		for (int i = 0; i < this.populationSize; i ++) {
+			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+				if (Math.random() < this.mutationProb) {
+					this.population[i][j] = Math.random();
+				}
+			}  
+		}
+	}
+
+	public double[] train() {
+		// Randomly initialize weights
+		double[] weights = new double[WEIGHTS_COUNT];
+		for (int i = 0; i < WEIGHTS_COUNT; i ++) {
+			weights[i] = Math.random();
+		}
+		return train(weights);
+	}
+
+	public double[] train(double[] initialWeights) {
+		this.initPopulation(initialWeights);
+
+		for (int g = 0; g < this.noOfGenerations; g ++) {
+			this.evaluatePopulationFitness();
+			this.doRouletteWheelSelection();
+			this.doWeightedAverageCrossover();
+			this.doRandomMutation();
+			prettyPrintGeneration(g);
+		}
+
+		double bestFitness = -Double.MAX_VALUE;
+		double[] bestWeights = null;
+
+		for (int i = 0; i < this.populationSize; i ++) {
+			if (this.individualsFitness[i] > bestFitness) {
+				bestWeights = this.population[i];
+				bestFitness = this.individualsFitness[i];
+			} 
+		}
+
+		return bestWeights;
+	}    
+	
+	private int getBestIndividualIndex() {
+		double bestFitness = -Double.MAX_VALUE;
+		int index = -1;
+		
+		for (int i = 0; i < this.populationSize; i ++) {
+			if (this.individualsFitness[i] > bestFitness) {
+				index = i;
+				bestFitness = this.individualsFitness[i];
+			} 
+		}
+		
+		return index;
+	}
+
+	private void prettyPrintGeneration(int generation) {
+		int bestIndividualIndex = this.getBestIndividualIndex();
+		double fitness = this.individualsFitness[bestIndividualIndex];
+		double[] bestIndividual = this.population[bestIndividualIndex];
+		System.out.println("Best phenotype of generation " + generation +
+			" has fitness " + fitness + " with weights " + Arrays.toString(bestIndividual));
 	}
 }

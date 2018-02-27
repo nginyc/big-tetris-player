@@ -7,10 +7,10 @@ public class PlayerTrainer {
 
 	public static void main(String[] args) {
 		GameStateUtilityLearner learner = new GameStateUtilityLearner(
-			20, 100, 0.25f, 5, 0.75f, 0.05f, 0.05f
+			10, 10, 100, 0.05
 		);
-		double[] weights = learner.train();
+
+		double[] weights = learner.train(new double[] { 0.4196536509730699, 0.48691656577614023, 0.4990965922288645, 0.13582579792757876 });
 		System.out.println("Best utility func weights: " + Arrays.toString(weights));
 	}
 }
- 
