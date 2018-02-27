@@ -32,6 +32,10 @@ public class PlayerSkeleton {
 
 		while(!s.hasLost()) {
 			int[] move = p.pickMove(s);
+			if (move == null) {
+				// System.out.println("No move will result in a next state.");
+				break;
+			}
 			s.makeMove(move[0], move[1]);
 			s.draw();
 			s.drawNext(0,0);

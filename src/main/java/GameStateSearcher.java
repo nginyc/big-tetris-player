@@ -25,7 +25,7 @@ public class GameStateSearcher {
       double moveUtil = utilityFunction.get(gameState);
       // System.out.println(String.format("Considering move %s resulting in util %f...", Arrays.toString(legalMove), moveUtil));
       // System.out.println(gameState);
-      if (moveUtil > bestMoveUtil) {
+      if (moveUtil > bestMoveUtil && gameState.hasPlayerLost() != 1) {
         bestMove = legalMove;
         bestMoveUtil = moveUtil;
       }
