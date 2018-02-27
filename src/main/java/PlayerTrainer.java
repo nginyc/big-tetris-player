@@ -2,7 +2,7 @@ import java.util.Arrays;
 
 public class PlayerTrainer {
 
-	public static int CANDIDATE_COUNT = 50;
+	public static int CANDIDATE_COUNT = 25;
 
 	public PlayerTrainer() {
 	}
@@ -15,7 +15,7 @@ public class PlayerTrainer {
 		// Low computation time
 		// Converge quickly to a local maxima
 		GameStateUtilityLearner explorer = new GameStateUtilityLearner(
-			3, 100, 10, 0.01, 0.2, 0.6
+			3, 25, 20, 0.1, 0.8, 0.5
 		);
 		for (int i = 0; i < CANDIDATE_COUNT; i ++) {
 			candidates[i] = explorer.train();

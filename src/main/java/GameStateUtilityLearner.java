@@ -23,7 +23,7 @@ public class GameStateUtilityLearner {
 	private double tournamentSampleRatio;
 	private ExecutorService executor;
 
-	public static int WEIGHTS_COUNT = 8;
+	public static int WEIGHTS_COUNT = 15;
 	public static int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
 	public GameStateUtilityLearner(int noOfTriesPerIndividual, int noOfGenerations,

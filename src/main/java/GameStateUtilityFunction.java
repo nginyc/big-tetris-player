@@ -3,7 +3,7 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 	private double[] weights;
 
 	public GameStateUtilityFunction(double[] weights) {
-		if (weights.length != 8) {
+		if (weights.length != 15) {
 			throw new IllegalArgumentException();
 		}
 
@@ -27,7 +27,14 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 			this.getWeight(4) * gameState.getWells(2) +
 			this.getWeight(5) * gameState.getLandingHeight() +
 			this.getWeight(6) * gameState.getColTransitions() +
-			this.getWeight(7) * gameState.getRowTransitions()
+			this.getWeight(7) * gameState.getRowTransitions() +
+			this.getWeight(8) * gameState.getBlockadesTotalVolume() +
+			this.getWeight(9) * gameState.getNumBlocksInField() +
+			this.getWeight(10) * gameState.getMeanHeightDifference() +
+            this.getWeight(11) * gameState.getNumEdgesTouchingTheWall() +
+            this.getWeight(12) * gameState.getNumEdgesTouchingTheFloor() +
+            this.getWeight(13) * gameState.getNumEdgesTouchingCeiling() +
+            this.getWeight(14) * gameState.getNumEdgesTouchingAnotherBlock()
 		);
 	}
 }
