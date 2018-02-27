@@ -70,6 +70,15 @@ Best learner params: [108.86706719948505, 0.5665333073435306, 79.38349426947018,
 
 After implementing own GA:
 
+	this.getWeight(0) * gameState.getColumnAggregateHeight() + 
+    this.getWeight(1) * gameState.getRowsClearedInCurrentMove() + 
+    this.getWeight(2) * gameState.getHolesTotalVolume() +
+    this.getWeight(3) * gameState.getBumpiness(1) +
+    this.getWeight(4) * gameState.getWells(2) +
+    this.getWeight(5) * gameState.getLandingHeight() +
+    this.getWeight(6) * gameState.getColTransitions() +
+    this.getWeight(7) * gameState.getRowTransitions()
+
 Best phenotype of generation 25 has fitness 7405.3 with weights [0.45450711516497366, 0.7996323218957114, 0.056208922452806766, 0.7417362912805037, 0.37466061682423224, 0.3744167227771637, 0.07039707761413969, 0.06783983260926996]
 <=========----> 75% EXECUTING [55m 39s]
 
