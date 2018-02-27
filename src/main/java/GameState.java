@@ -353,8 +353,9 @@ public class GameState {
     public int getMeanHeightDifference() {
         // Average of the difference between the height of each col and the mean height of the state
         int meanHeightDifference = 0;
+        int average = getAverageHeightOfCols();
         for (int c = 0; c < COLS; c++) {
-            meanHeightDifference += Math.abs(getAverageHeightOfCols() - top[c]);
+            meanHeightDifference += Math.abs(average - top[c]);
         }
         meanHeightDifference = meanHeightDifference / COLS;
         return meanHeightDifference;
