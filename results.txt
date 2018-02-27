@@ -29,3 +29,43 @@ Best phenotype of generation 62 has fitness 1607.45 with weights [-0.28128394558
 
 Best phenotype of generation 50 has fitness 2863.8 with weights [0.3688924671960313, 0.9652414427728617, -0.9399300368500443, -0.4669500451420958, 0.15295872346206107, -0.2408066188470639, -0.015070623241881242, -0.5012354608020358, -0.392284146389162, -0.9161281670433952, -0.98765525345166]
 <=========----> 75% EXECUTING [1h 30m 24s]
+
+
+
+	weights[0] * gameState.getAggregateHeight() + 
+    weights[1] * gameState.getRowsClearedInCurrentMove() + 
+    weights[2] * gameState.getHolesTotalVolume() +
+    weights[3] * gameState.getBumpiness(1);
+
+Best phenotype of generation 26 has fitness 1052.25 with weights [-0.9726758567596709, 0.29663327462923705, -0.7278022474851877, -0.29449358718177643]
+Best utility func weights: [-0.9726758567596709, 0.29663327462923705, -0.7278022474851877, -0.29449358718177643]
+BUILD SUCCESSFUL in 19m 10s
+
++ Learner
+Best phenotype of generation 1 has fitness 1158.6 with weights [59.494570584528674, 0.47778754679056656, 42.39697747899114, 0.2306850413004606, 0.5436719819578844, 0.7692562239727847]
+
+Util:
+Best phenotype of generation 7 has fitness 2369.2 with weights [0.04838195985964, 0.6329625775784193, -0.9891819583135928, -0.17573154843865257]
+<=========----> 75% EXECUTING [13m 0s]
+
+GameStateUtilityLearner learner = new GameStateUtilityLearner(
+        20, 20, 180, 0.4, 130, 0.2, 0.6, 0.9
+    );
+
+Best phenotype of generation 9 has fitness 3119.8 with weights [-0.09006024146922531, -0.46392200397206523, -0.6789537659258366, -0.16027526154673533]
+<=========----> 75% EXECUTING [31m 54s]
+
+
+GameStateUtilityLearner learner = new GameStateUtilityLearner(
+    20, 20, 100, 0.4, 5, 0.2, 0.6, 0.9
+);
+
+Best phenotype of generation 16 has fitness 3172.65 with weights [-0.05003735941143013, -0.48261561045736473, -0.7763113177941997, -0.18716846125266753]
+<=========----> 75% EXECUTING [21m 9s]
+
+Best phenotype of generation 5 has fitness 2808.15 with weights [108.86706719948505, 0.5665333073435306, 79.38349426947018, 0.03913416549413778, 0.6468846132697939, 0.13518943642644166]
+Best learner params: [108.86706719948505, 0.5665333073435306, 79.38349426947018, 0.03913416549413778, 0.6468846132697939, 0.13518943642644166]
+
++ 2-level search
+
+
