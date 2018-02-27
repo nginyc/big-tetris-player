@@ -217,6 +217,10 @@ public class GameState {
 
     ///////////////////////// Heuristics ////////////////////////////
 
+    public int getAggregateHeight() {
+        return Arrays.stream(top).sum();
+    }
+
     public int getMaxTopHeight() {
         return Arrays.stream(top).max().orElse(0);
     }
@@ -421,7 +425,6 @@ public class GameState {
             throw new IllegalStateException();
         }
 
-        this.rowsClearedInCurrentMove = 0;
         int nextPiece = this.nextPiece;
         this.orient = orient;
         int turn = ++this.turn;
@@ -496,6 +499,7 @@ public class GameState {
         }
 
         this.nextPiece = piece;
+        this.rowsClearedInCurrentMove = 0;
     }
 
     // On player's turn, get legal moves for player as an array of {slot, orient} duples
