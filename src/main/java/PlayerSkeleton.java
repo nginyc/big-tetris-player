@@ -16,7 +16,7 @@ public class PlayerSkeleton {
 			s.lost ? 1 : 0, s.getTurnNumber(), s.getRowsCleared()
 		);
 
-		GameStateSearcher.BestMoveResult result = this.gameStateSearcher.searchNLevelsDFS(gameState, 2);
+		GameStateSearcher.BestMoveResult result = this.gameStateSearcher.searchNLevelsDFS(gameState, 1);
 		
 		return result.move;
 	}
@@ -25,7 +25,7 @@ public class PlayerSkeleton {
 		State s = new State();
 		// new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			0.44434135395361885, 0.8117001403213164, 0.047147956300193195, 0.7396052257856431, 0.3493358550139455, 0.3792102040425659, 0.0762387008863219, 0.04941063287026368
+			0.3558897587671985, 0.5578360670485542, 0.15301938433107315, 0.7744246767898073, 0.3632932494322964, 0.13466182090419002, 0.09534435426024071, 0.1322198150632026, 0.2773706633320931, 0.06468844936537607, 0.8266387046568953, 0.831341087462889, 0.870554870899324, 0.5414074175725934, 0.8112706754176735
 		});
 
 		while(!s.hasLost()) {
