@@ -151,9 +151,6 @@ public class GameState {
     private int rowsCleared = 0; // Rows cleared in total
     private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
     private int numBlocksInField = 0; // Number of filled squares in level
-    private int numFacesInContactWithEachOther = 0; // Number of contacts between all blocks
-    private int numFacesInContactWithWall = 0; // Number of contacts from all blocks to the wall
-    private int numFacesInContactWithFloor = 0; // Number of contacts from all blocks to the floor
     private int bottom = 0; // Row corresponding to bottom of piece after falling
     private int columnAggregateHeight = 0;
     private int prevPiece; // Previous piece that was placed, -1 for not set
@@ -337,28 +334,32 @@ public class GameState {
     }
 
     // This heuristic encourages smoothness of the "terrain" (TOP only)
-    public int getBumpiness(int powerFactor) {
+    public int getBumpiness() {
         int bumpiness = 0;
         for (int c = 0; c < COLS - 1; c++) {
-            bumpiness += Math.pow(Math.abs(top[c] - top[c + 1]), powerFactor);
+            bumpiness += Math.abs(top[c] - top[c + 1]);
         }
         return bumpiness;
     }
 
     // This heuristic discourages formation of wells
     // Wells is defined as a 1-block wide valley.
-    public int getWells(int powerFactor) {
+    public int getWells() {
         int wellScore = 0;
+        int temp;
         if (top[0] < top[1]) {
-            wellScore += Math.pow(top[0] - top[1], powerFactor);
+            temp = top[0] - top[1];
+            wellScore += temp * temp;
         }
         for (int c = 1; c < COLS - 1; c++) {
             if (top[c - 1] > top[c] && top[c + 1] > top[c]) {
-                wellScore += Math.pow(Math.min(top[c - 1], top[c + 1]) - top[c], powerFactor);
+                temp = Math.min(top[c - 1], top[c + 1]) - top[c];
+                wellScore += temp * temp;
             }
         }
         if (top[COLS - 1] < top[COLS - 2]) {
-            wellScore += Math.pow(top[COLS - 1] - top[COLS - 2], powerFactor);
+            temp = top[COLS - 1] - top[COLS - 2];
+            wellScore += temp * temp;
         }
         return wellScore;
     }
@@ -469,7 +470,7 @@ public class GameState {
         if (this.lost == 1) {
             return; // Lost already la
         }
-
+        
         int nextPiece = this.nextPiece;
         this.orient = orient;
         int turn = ++this.turn;

@@ -23,8 +23,8 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 			this.getWeight(0) * gameState.getColumnAggregateHeight() + 
 			this.getWeight(1) * gameState.getRowsClearedInCurrentMove() + 
 			this.getWeight(2) * gameState.getHolesTotalVolume() +
-			this.getWeight(3) * gameState.getBumpiness(1) +
-			this.getWeight(4) * gameState.getWells(2) +
+			this.getWeight(3) * gameState.getBumpiness() +
+			this.getWeight(4) * gameState.getWells() +
 			this.getWeight(5) * gameState.getLandingHeight() +
 			this.getWeight(6) * gameState.getColTransitions() +
 			this.getWeight(7) * gameState.getRowTransitions() +
