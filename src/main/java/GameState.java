@@ -387,16 +387,6 @@ public class GameState {
         return meanHeightDifference;
     }
 
-    // This heuristic encourages the completion of rows
-    public int erodedPieceCells() {
-        // Number of rows that cleared x Number of blocks of the variant that got destroyed
-        if (rowsClearedInCurrentMove > 0) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
     public int getNumEdgesTouchingAnotherBlock() {
         int count = 0;
         for (int c = 0; c < COLS; c++) {
