@@ -440,7 +440,7 @@ public class GameState {
         }
 
         if (this.lost == 1) {
-            return 0; // Lost already la
+            return -Double.MAX_VALUE; // moveUtil for losing move MUST be sufficiently negative so that the we will never take it until the very last step
         }
         
         int nextPiece = this.nextPiece;
@@ -458,7 +458,7 @@ public class GameState {
         if (bottom + P_HEIGHT[nextPiece][orient] > ROWS) {
             this.lost = 1;
             this.nextPiece = -1;
-            return 0;
+            return -Double.MAX_VALUE; // same applies; moveUtil must be sufficiently negative
         }
 
         // Fill in the appropriate blocks
