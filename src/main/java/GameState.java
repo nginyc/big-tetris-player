@@ -387,23 +387,6 @@ public class GameState {
         return meanHeightDifference;
     }
 
-    public int getNumEdgesTouchingAnotherBlock() {
-        int count = 0;
-        for (int c = 0; c < COLS; c++) {
-            for (int r = 0; r < top[c]; r++) {
-                if (this.getField(r, c) != 0) {
-                    if (c < COLS - 1 && this.getField(r, c + 1) != 0) {
-                        count++;
-                    }
-                    if (r < ROWS - 1 && this.getField(r + 1, c) != 0) {
-                        count++;
-                    }
-                }
-            }
-        }
-        return count;
-    }
-
     public int getNumEdgesTouchingCeiling() {
         int count = 0;
         for (int c = 0; c < COLS; c++) {
