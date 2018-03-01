@@ -157,6 +157,7 @@ public class GameState {
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
+    private int maxTop; // Max height of column
 
     public GameState() {
         this.field = new HashSet<>();
@@ -256,9 +257,8 @@ public class GameState {
 
     // imagine xx___xx, there will be 2 row transitions
     public int getRowTransitions() {
-        int maxFilledRow = Arrays.stream(top).max().getAsInt();
         int transitions = 0;
-        for (int r = 0; r < maxFilledRow; r++) {
+        for (int r = 0; r < this.maxTop; r++) {
             transitions += getRowTransitionsAt(r);
         }
         return transitions;
@@ -367,7 +367,7 @@ public class GameState {
     // The height where the piece is put (= the height of the column + (the height of the piece / 2))
     public int getLandingHeight() {
         assert this.orient != -1; // orient should be set by makePlayerMove
-        assert this.prevPiece != -1; // orient should be set by makePlayerMove
+        assert this.prevPiece != -1;
         return this.bottom + (P_HEIGHT[this.prevPiece][this.orient] / 2);
     }
     
@@ -430,7 +430,7 @@ public class GameState {
     public int getNumEdgesTouchingTheWall() {
         int count = 0;
         for (int c = 0; c < COLS; c += COLS - 1) {
-            for (int r = 0; r < ROWS; r++) {
+            for (int r = 0; r < top[c]; r++) {
                 if (this.getField(r, c) != 0) {
                     count++;
                 }
@@ -521,6 +521,7 @@ public class GameState {
             if (full) {
                 this.numBlocksInField -= COLS;
                 this.rowsClearedInCurrentMove++;
+                this.maxTop--;
                 // For each column
                 for (int c = 0; c < COLS; c++) {
                     // Slide down all bricks
@@ -600,14 +601,19 @@ public class GameState {
     }
 
     private void refreshTop() {
+        int max = 0;
         for (int c = 0; c < COLS; c++) {
             this.top[c] = 0;
             for (int r = ROWS - 1; r >= 0; r--) { // From top
                 if (this.getField(r, c) != 0) {
                     this.top[c] = r + 1;
+                    if (this.top[c] > max) {
+                        max = this.top[c];
+                    }
                     break;
                 }
             }
         }
+        this.maxTop = max;
     }
 }
