@@ -152,12 +152,12 @@ public class GameState {
     private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
     private int numBlocksInField = 0; // Number of filled squares in level
     private int bottom = 0; // Row corresponding to bottom of piece after falling
-    private int columnAggregateHeight = 0;
     private int prevPiece; // Previous piece that was placed, -1 for not set
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
     private int maxTop; // Max height of column
+    private int columnAggregateHeight = 0; // total height of all columns
 
     public GameState() {
         this.field = new HashSet<>();
@@ -193,7 +193,7 @@ public class GameState {
         this.refreshTop();
     }
 
-    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top, int aggHeight) {
+    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top, int maxTop, int aggHeight) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.prevPiece = nextPiece;
@@ -201,6 +201,7 @@ public class GameState {
         this.turn = turn;
         this.rowsCleared = rowsCleared;
         this.top = top;
+        this.maxTop = maxTop;
         this.columnAggregateHeight = aggHeight;
     }
 
@@ -209,7 +210,7 @@ public class GameState {
         int[] topClone = Arrays.stream(this.top).toArray();
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
-            this.turn, this.rowsCleared, topClone, this.columnAggregateHeight
+            this.turn, this.rowsCleared, topClone, this.maxTop, this.columnAggregateHeight
         );
     }
 
@@ -582,11 +583,14 @@ public class GameState {
 
     private void refreshTop() {
         int max = 0;
+        this.maxTop = 0;
+        this.columnAggregateHeight = 0;
         for (int c = 0; c < COLS; c++) {
             this.top[c] = 0;
             for (int r = ROWS - 1; r >= 0; r--) { // From top
                 if (this.getField(r, c) != 0) {
                     this.top[c] = r + 1;
+                    this.columnAggregateHeight += top[c];
                     if (this.top[c] > max) {
                         max = this.top[c];
                     }
