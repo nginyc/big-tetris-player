@@ -193,7 +193,7 @@ public class GameState {
         this.refreshTop();
     }
 
-    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
+    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top, int aggHeight) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.prevPiece = nextPiece;
@@ -201,6 +201,7 @@ public class GameState {
         this.turn = turn;
         this.rowsCleared = rowsCleared;
         this.top = top;
+        this.columnAggregateHeight = aggHeight;
     }
 
     public GameState clone() {
@@ -208,7 +209,7 @@ public class GameState {
         int[] topClone = Arrays.stream(this.top).toArray();
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
-            this.turn, this.rowsCleared, topClone
+            this.turn, this.rowsCleared, topClone, this.columnAggregateHeight
         );
     }
 
@@ -372,11 +373,7 @@ public class GameState {
     }
     
     public int getAverageHeightOfCols() {
-        int totalHeight = 0;
-        for (int c = 0; c < COLS; c++) {
-            totalHeight += top[c];
-        }
-        return (totalHeight / COLS);
+        return (columnAggregateHeight / COLS);
     }
 
     public int getMeanHeightDifference() {
