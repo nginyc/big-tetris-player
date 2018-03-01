@@ -59,7 +59,7 @@ public class GameStateUtilityLearner {
 				gameState.setNextPiece(nextPiece);
 				GameStateSearcher.BestMoveResult result = gameStateSearcher.searchNLevelsDFS(gameState, 1);
 				int[] move = result.move;
-				gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT], utilityFunction);
+				gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT], null);
 			}
 			rowsCleared += gameState.getRowsCleared(); 
 		}
