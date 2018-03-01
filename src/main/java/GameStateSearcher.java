@@ -31,7 +31,7 @@ public class GameStateSearcher {
         GameState nextGameState = gameState.clone();
         double moveUtil = nextGameState.makePlayerMove(orient, slot, utilityFunction);
         //double moveUtil = utilityFunction.get(nextGameState);
-        if (moveUtil >= bestMoveUtil && nextGameState.hasPlayerLost() != 1) {
+        if (moveUtil >= bestMoveUtil) {
           bestMove = legalMove;
           bestMoveUtil = moveUtil;
         }
@@ -57,7 +57,7 @@ public class GameStateSearcher {
           moveUtil += result.moveUtil / GameState.N_PIECES;
         }
 
-        if (moveUtil >= bestMoveUtil && nextGameState.hasPlayerLost() != 1) {
+        if (moveUtil >= bestMoveUtil) {
           bestMove = legalMove;
           bestMoveUtil = moveUtil;
         }
@@ -83,7 +83,7 @@ public class GameStateSearcher {
       //double moveUtil = utilityFunction.get(gameState);
       // System.out.println(String.format("Considering move %s resulting in util %f...", Arrays.toString(legalMove), moveUtil));
       // System.out.println(gameState);
-      if (moveUtil >= bestMoveUtil && gameState.hasPlayerLost() != 1) {
+      if (moveUtil >= bestMoveUtil) {
         bestMove = legalMove;
         bestMoveUtil = moveUtil;
       }
