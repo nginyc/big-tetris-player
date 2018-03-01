@@ -193,7 +193,7 @@ public class GameState {
         this.refreshTop();
     }
 
-    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top, int aggHeight) {
+    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top, int maxTop, int aggHeight) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.prevPiece = nextPiece;
@@ -201,6 +201,7 @@ public class GameState {
         this.turn = turn;
         this.rowsCleared = rowsCleared;
         this.top = top;
+        this.maxTop = maxTop;
         this.columnAggregateHeight = aggHeight;
     }
 
@@ -209,7 +210,7 @@ public class GameState {
         int[] topClone = Arrays.stream(this.top).toArray();
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
-            this.turn, this.rowsCleared, topClone, this.columnAggregateHeight
+            this.turn, this.rowsCleared, topClone, this.maxTop, this.columnAggregateHeight
         );
     }
 
