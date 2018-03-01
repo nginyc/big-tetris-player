@@ -219,7 +219,7 @@ public class GameState {
     }
 
     public int getMaxTopHeight() {
-        return Arrays.stream(top).max().orElse(0);
+        return this.maxTop;
     }
 
     public int getRowsCleared() {
@@ -503,6 +503,9 @@ public class GameState {
             int newTop = bottom + P_TOP[nextPiece][orient][c];
             columnAggregateHeight += newTop - this.top[slot + c];
             this.top[slot + c] = newTop;
+            if(newTop > this.maxTop) {
+                this.maxTop = newTop;
+            }
         }
 
         // Check for full rows and clear them
