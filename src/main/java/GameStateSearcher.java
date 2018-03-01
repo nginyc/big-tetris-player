@@ -29,8 +29,8 @@ public class GameStateSearcher {
         int orient = legalMove[GameState.ORIENT];
         int slot = legalMove[GameState.SLOT];
         GameState nextGameState = gameState.clone();
-        nextGameState.makePlayerMove(orient, slot);
-        double moveUtil = utilityFunction.get(nextGameState);
+        double moveUtil = nextGameState.makePlayerMove(orient, slot, utilityFunction);
+        //double moveUtil = utilityFunction.get(nextGameState);
         if (moveUtil >= bestMoveUtil) {
           bestMove = legalMove;
           bestMoveUtil = moveUtil;
@@ -48,8 +48,7 @@ public class GameStateSearcher {
         int orient = legalMove[GameState.ORIENT];
         int slot = legalMove[GameState.SLOT];
         GameState nextGameState = gameState.clone();
-        nextGameState.makePlayerMove(orient, slot);
-
+        nextGameState.makePlayerMove(orient, slot, null);
         double moveUtil = 0;
         for(int i = 0; i < GameState.N_PIECES; i++) {
           GameState nextPredictGameState = nextGameState.clone();
@@ -80,8 +79,8 @@ public class GameStateSearcher {
       int orient = legalMove[GameState.ORIENT];
       int slot = legalMove[GameState.SLOT];
       GameState gameState = startGameState.clone();
-      gameState.makePlayerMove(orient, slot);
-      double moveUtil = utilityFunction.get(gameState);
+      double moveUtil = gameState.makePlayerMove(orient, slot, utilityFunction);
+      //double moveUtil = utilityFunction.get(gameState);
       // System.out.println(String.format("Considering move %s resulting in util %f...", Arrays.toString(legalMove), moveUtil));
       // System.out.println(gameState);
       if (moveUtil >= bestMoveUtil) {

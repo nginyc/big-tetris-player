@@ -462,13 +462,14 @@ public class GameState {
         return this.lost;
     }
 
-    public void makePlayerMove(int orient, int slot) {
+    // returns moveUtil
+    public double makePlayerMove(int orient, int slot, IGameStateUtilityFunction utilityFunction) {
         if (this.nextPiece == -1) {
             throw new IllegalStateException();
         }
 
         if (this.lost == 1) {
-            return; // Lost already la
+            return 0; // Lost already la
         }
         
         int nextPiece = this.nextPiece;
@@ -486,7 +487,7 @@ public class GameState {
         if (bottom + P_HEIGHT[nextPiece][orient] > ROWS) {
             this.lost = 1;
             this.nextPiece = -1;
-            return;
+            return 0;
         }
 
         // Fill in the appropriate blocks
@@ -546,6 +547,12 @@ public class GameState {
         this.nextPiece = -1;
         this.rowsCleared += this.rowsClearedInCurrentMove;
         this.bottom = bottom;
+
+        if (utilityFunction != null) {
+            return utilityFunction.get(this);
+        } else {
+            return 0;
+        }
     }
 
     public int getStateNextPiece() {
