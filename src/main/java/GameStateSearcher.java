@@ -67,7 +67,7 @@ public class GameStateSearcher {
   }
 
   // Single-level search
-  public int[] getBestMove(GameState startGameState) {
+  public BestMoveResult getBestMove(GameState startGameState) {
     int[][] legalMoves = startGameState.getLegalPlayerMoves();
     // System.out.println(String.format("Evaluating best move for start game state:"));
     // System.out.println(startGameState);
@@ -92,6 +92,6 @@ public class GameStateSearcher {
     // System.out.println(String.format("Best move is %s with util %f", Arrays.toString(bestMove), bestMoveUtil));
     // System.out.println();
 
-    return bestMove;
+    return new BestMoveResult(bestMove, bestMoveUtil);
   }
 }
