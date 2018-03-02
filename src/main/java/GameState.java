@@ -157,6 +157,7 @@ public class GameState {
     private int numBlocksInField = 0; // Number of filled squares in level
     private double landingHeightInPrevMove = 0; // Landing height in prev move
     private int numBlocksTouchingWall = 0;
+    private int[] rowTransitions = new int[ROWS]; // number of transitions from blocks to hole to block in each row
 
     public GameState() {
         this.field = new HashSet<>();
@@ -164,7 +165,7 @@ public class GameState {
 
     private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
         int columnAggregateHeight, int rowsClearedInPrevMove, int numBlocksInField, 
-        int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall) {
+        int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.lost = lost;
@@ -177,17 +178,19 @@ public class GameState {
         this.maxTop = maxTop;
         this.landingHeightInPrevMove = landingHeightInPrevMove;
         this.numBlocksTouchingWall = numBlocksTouchingWall;
+        this.rowTransitions = rowTransitions;
     }
 
     public GameState clone() {
         HashSet<Integer> fieldClone = new HashSet<>(this.field);
         int[] topClone = Arrays.stream(this.top).toArray();
+        int[] rowTransitionsClone = Arrays.stream(this.rowTransitions).toArray();
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
             this.turn, this.rowsCleared, topClone,
             this.columnAggregateHeight, this.rowsClearedInPrevMove, 
             this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove,
-            this.numBlocksTouchingWall
+            this.numBlocksTouchingWall, rowTransitionsClone
         );
     }
 
@@ -220,23 +223,7 @@ public class GameState {
 
     // imagine xx___xx, there will be 2 row transitions
     public int getRowTransitions() {
-        int transitions = 0;
-        for (int r = 0; r < this.maxTop; r++) {
-            transitions += getRowTransitionsAt(r);
-        }
-        return transitions;
-    }
-
-    private int getRowTransitionsAt(int r) {
-        int count = 0;
-        int lastScanned = 0; // 0 if not filled, 1 if filled
-        for (int c = 0; c < COLS; c++) {
-            if ((this.getField(r, c) != 0 && lastScanned == 0) || (lastScanned != 0 && this.getField(r, c) == 0)) {
-                count++;
-            }
-            lastScanned = this.getField(r, c);
-        }
-        return count;
+        return Arrays.stream(this.rowTransitions).sum();
     }
 
     public int getColTransitions() {
@@ -421,6 +408,24 @@ public class GameState {
             // From bottom to top of piece
             for (int h = bottom + P_BOTTOM[nextPiece][orient][i]; h < bottom + P_TOP[nextPiece][orient][i]; h++) {
                 this.setField(h, i + slot, turn);
+
+                // Calculate row transitions
+                int colBefore = i + slot - 1;
+                int colAfter = i + slot + 1;
+                if (colBefore >= 0 && this.getField(h, colBefore) == 0) {
+                    // Col before is empty
+                    this.rowTransitions[h] += 1;
+                } else if (colBefore >= 0 && this.getField(h, colBefore) > 0) {
+                    // Col before is filled
+                    this.rowTransitions[h] -= 1;
+                }
+                if (colAfter < COLS && this.getField(h, colAfter) == 0) {
+                    // Col after is empty
+                    this.rowTransitions[h] += 1;
+                } else if (colAfter < COLS && this.getField(h, colAfter) > 0) {
+                    // Col after is filled
+                    this.rowTransitions[h] -= 1;
+                }
             }
             // If the rightmost col of the current piece touches the wall
             if (i + slot == COLS - 1) {
@@ -456,6 +461,12 @@ public class GameState {
                 this.rowsClearedInPrevMove++;
                 this.maxTop--;
                 this.numBlocksTouchingWall -= 2;
+
+                // Move down row transitions
+                for(int i = r; i < ROWS - 1; i++) {
+                    this.rowTransitions[i] = this.rowTransitions[i+1];
+                }
+
                 // For each column
                 for (int c = 0; c < COLS; c++) {
                     // Slide down all bricks
