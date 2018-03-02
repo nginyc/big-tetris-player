@@ -153,6 +153,7 @@ public class GameState {
     private int numBlocksInField = 0; // Number of filled squares in level
     private int bottom = 0; // Row corresponding to bottom of piece after falling
     private int prevPiece; // Previous piece that was placed, -1 for not set
+    private int numBlocksTouchingWall = 0;
 
     // Derived variables
     private int[] top = new int[COLS]; // Top filled row of each column
@@ -399,15 +400,7 @@ public class GameState {
     }
 
     public int getNumEdgesTouchingTheWall() {
-        int count = 0;
-        for (int c = 0; c < COLS; c += COLS - 1) {
-            for (int r = 0; r < top[c]; r++) {
-                if (this.getField(r, c) != 0) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        return this.numBlocksTouchingWall;
     }
 
     public int getNumEdgesTouchingTheFloor() {
@@ -461,6 +454,11 @@ public class GameState {
             return 0;
         }
 
+        // If the leftmost col of the current piece touches the wall
+        if (slot == 0) {
+            this.numBlocksTouchingWall += P_TOP[nextPiece][orient][0] - P_BOTTOM[nextPiece][orient][0];
+        }
+
         // Fill in the appropriate blocks
         // For each column in the piece 
         for (int i = 0; i < P_WIDTH[nextPiece][orient]; i++) {
@@ -468,12 +466,16 @@ public class GameState {
             for (int h = bottom + P_BOTTOM[nextPiece][orient][i]; h < bottom + P_TOP[nextPiece][orient][i]; h++) {
                 this.setField(h, i + slot, turn);
             }
+            // If the rightmost col of the current piece touches the wall
+            if (i + slot == COLS - 1) {
+                this.numBlocksTouchingWall += P_TOP[nextPiece][orient][i] - P_BOTTOM[nextPiece][orient][i];
+            }
         }
 
         // Adjust top
         for (int c = 0; c < P_WIDTH[nextPiece][orient]; c++) {
             int newTop = bottom + P_TOP[nextPiece][orient][c];
-            columnAggregateHeight += newTop - this.top[slot + c];
+            this.columnAggregateHeight += newTop - this.top[slot + c];
             this.top[slot + c] = newTop;
             if(newTop > this.maxTop) {
                 this.maxTop = newTop;
@@ -497,6 +499,7 @@ public class GameState {
                 this.numBlocksInField -= COLS;
                 this.rowsClearedInCurrentMove++;
                 this.maxTop--;
+                this.numBlocksTouchingWall -= 2;
                 // For each column
                 for (int c = 0; c < COLS; c++) {
                     // Slide down all bricks
