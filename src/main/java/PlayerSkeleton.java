@@ -12,11 +12,15 @@ public class PlayerSkeleton {
 	//implement this function to have a working system
 	public int[] pickMove(State s) {
 		GameState gameState = new GameState(
-			this.getBoardField(s), s.getNextPiece(), 
-			s.lost ? 1 : 0, s.getTurnNumber(), s.getRowsCleared()
+				this.getBoardField(s), s.getNextPiece(),
+				s.lost ? 1 : 0, s.getTurnNumber(), s.getRowsCleared()
 		);
-		int[] move = this.gameStateSearcher.getBestMove(gameState);
-		return move;
+		StateNode root = new StateNode(gameState);
+		double bestUtil = this.gameStateSearcher.searchNLevelsDFS(root, 2);
+		System.out.println("Best Utility found: " + bestUtil);
+//        int[] move = this.gameStateSearcher.getBestMove(gameState);
+//        return move;
+		return root.getBestMove();
 	}
 
 	public static void main(String[] args) {
