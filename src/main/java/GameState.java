@@ -156,6 +156,7 @@ public class GameState {
     private int rowsClearedInPrevMove = 0; // Rows cleared in prev move
     private int numBlocksInField = 0; // Number of filled squares in level
     private double landingHeightInPrevMove = 0; // Landing height in prev move
+    private int numBlocksTouchingWall = 0;
 
     public GameState() {
         this.field = new HashSet<>();
@@ -163,7 +164,7 @@ public class GameState {
 
     private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
         int columnAggregateHeight, int rowsClearedInPrevMove, int numBlocksInField, 
-        int maxTop, double landingHeightInPrevMove) {
+        int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.lost = lost;
@@ -175,6 +176,7 @@ public class GameState {
         this.numBlocksInField = numBlocksInField;
         this.maxTop = maxTop;
         this.landingHeightInPrevMove = landingHeightInPrevMove;
+        this.numBlocksTouchingWall = numBlocksTouchingWall;
     }
 
     public GameState clone() {
@@ -184,7 +186,8 @@ public class GameState {
             fieldClone, this.nextPiece, this.lost, 
             this.turn, this.rowsCleared, topClone,
             this.columnAggregateHeight, this.rowsClearedInPrevMove, 
-            this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove
+            this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove,
+            this.numBlocksTouchingWall
         );
     }
 
@@ -355,15 +358,7 @@ public class GameState {
     }
 
     public int getNumEdgesTouchingTheWall() {
-        int count = 0;
-        for (int c = 0; c < COLS; c += COLS - 1) {
-            for (int r = 0; r < top[c]; r++) {
-                if (this.getField(r, c) != 0) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        return this.numBlocksTouchingWall;
     }
 
     public int getNumEdgesTouchingTheFloor() {
@@ -415,6 +410,11 @@ public class GameState {
             return;
         }
 
+        // If the leftmost col of the current piece touches the wall
+        if (slot == 0) {
+            this.numBlocksTouchingWall += P_TOP[nextPiece][orient][0] - P_BOTTOM[nextPiece][orient][0];
+        }
+
         // Fill in the appropriate blocks
         // For each column in the piece 
         for (int i = 0; i < P_WIDTH[nextPiece][orient]; i++) {
@@ -422,13 +422,17 @@ public class GameState {
             for (int h = bottom + P_BOTTOM[nextPiece][orient][i]; h < bottom + P_TOP[nextPiece][orient][i]; h++) {
                 this.setField(h, i + slot, turn);
             }
+            // If the rightmost col of the current piece touches the wall
+            if (i + slot == COLS - 1) {
+                this.numBlocksTouchingWall += P_TOP[nextPiece][orient][i] - P_BOTTOM[nextPiece][orient][i];
+            }
         }
 
         // Adjust top
         for (int c = 0; c < P_WIDTH[nextPiece][orient]; c++) {
             int topIndex = slot + c;
             int newTop = bottom + P_TOP[nextPiece][orient][c];
-            columnAggregateHeight += newTop - this.top[topIndex];
+            this.columnAggregateHeight += newTop - this.top[topIndex];
             this.top[topIndex] = newTop;
             if(newTop > this.maxTop) {
                 this.maxTop = newTop;
@@ -451,6 +455,7 @@ public class GameState {
                 this.numBlocksInField -= COLS;
                 this.rowsClearedInPrevMove++;
                 this.maxTop--;
+                this.numBlocksTouchingWall -= 2;
                 // For each column
                 for (int c = 0; c < COLS; c++) {
                     // Slide down all bricks
@@ -506,10 +511,11 @@ public class GameState {
                 "# State \n" + "## field \n" + "%s \n" + "## nextPiece: %d \n" + "## lost: %d \n" + "## turn: %d \n"
                         + "## rowsCleared: %d \n" + "# Derived state \n" + "## top: %s \n" 
                         + "## columnAggregateHeight: %s \n" + "## rowsClearedInPrevMove: %s \n"
-                        + "## numBlocksInField: %s \n" + "## maxTop: %s \n" + "## landingHeightInPrevMove: %s",
+                        + "## numBlocksInField: %s \n" + "## maxTop: %s \n" + "## landingHeightInPrevMove: %s"
+                        + "## numBlocksTouchingWall: %s \n",
                 this.getPrettyPrintFieldString(this.field), this.nextPiece, this.lost, this.turn, this.rowsCleared,
                 Arrays.toString(this.top), this.columnAggregateHeight, this.rowsClearedInPrevMove, this.numBlocksInField,
-                this.maxTop, this.landingHeightInPrevMove
+                this.maxTop, this.landingHeightInPrevMove, this.numBlocksTouchingWall
         );
     }
 
