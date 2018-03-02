@@ -21,20 +21,20 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 		
 		return (
 			this.getWeight(0) * gameState.getColumnAggregateHeight() + 
-			this.getWeight(1) * gameState.getRowsClearedInCurrentMove() + 
+			this.getWeight(1) * gameState.getRowsClearedInPrevMove() + 
 			this.getWeight(2) * gameState.getHolesTotalVolume() +
-			this.getWeight(3) * gameState.getBumpiness(1) +
-			this.getWeight(4) * gameState.getWells(2) +
-			this.getWeight(5) * gameState.getLandingHeight() +
-			this.getWeight(6) * gameState.getColTransitions() +
-			this.getWeight(7) * gameState.getRowTransitions() +
-			this.getWeight(8) * gameState.getBlockadesTotalVolume() +
-			this.getWeight(9) * gameState.getNumBlocksInField() +
-			this.getWeight(10) * gameState.getMeanHeightDifference() +
-            this.getWeight(11) * gameState.getNumEdgesTouchingTheWall() +
-            this.getWeight(12) * gameState.getNumEdgesTouchingTheFloor() +
-            this.getWeight(13) * gameState.getNumEdgesTouchingCeiling() +
-            this.getWeight(14) * gameState.getNumEdgesTouchingAnotherBlock()
+			this.getWeight(3) * gameState.getMaxTopHeight() +
+			this.getWeight(4) * gameState.getBumpiness() +
+			this.getWeight(5) * gameState.getWells() +
+			this.getWeight(6) * gameState.getPrevLandingHeight() +
+			this.getWeight(7) * gameState.getColTransitions() +
+			this.getWeight(8) * gameState.getRowTransitions() +
+			this.getWeight(9) * gameState.getBlockadesTotalVolume() +
+			this.getWeight(10) * gameState.getNumBlocksInField() +
+			this.getWeight(11) * gameState.getMeanHeightDifference() +
+            this.getWeight(12) * gameState.getNumEdgesTouchingTheWall() +
+            this.getWeight(13) * gameState.getNumEdgesTouchingTheFloor() +
+            this.getWeight(14) * gameState.getNumEdgesTouchingCeiling()
 		);
 	}
 }

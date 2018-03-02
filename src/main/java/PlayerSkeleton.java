@@ -1,3 +1,4 @@
+import java.util.Arrays;
 
 public class PlayerSkeleton {
 
@@ -14,8 +15,12 @@ public class PlayerSkeleton {
 	//implement this function to have a working system
 	public int[] pickMove(State s) {
 		this.gameState.setNextPiece(s.getNextPiece());
+		// System.out.println("At game state:");
+		// System.out.println(this.gameState + "\n");
 		GameStateSearcher.BestMoveResult result = this.gameStateSearcher.searchNLevelsDFS(this.gameState, 1);
+		// Actually make the best move
 		this.gameState.makePlayerMove(result.move[0], result.move[1]);
+		// System.out.println(String.format("Best move %s resulted in util %f.", Arrays.toString(result.move), result.moveUtil));
 		return result.move;
 	}
 
@@ -23,7 +28,7 @@ public class PlayerSkeleton {
 		State s = new State();
 		// new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			-0.8793331272057922, 0.3101553510084032, -1, 0.08131740320451719, -0.26371297468266, -0.3641134817118301, 0.3132512371248528, -0.12697638610048667, -0.14414061689164392, -0.33749567608321795, 0.5510232612670767, 0.6468889991303903, -0.11670647424861746, 0.017096300316661317, 0.6207565558500359
+			-0.8109383395184426, -0.4498623560469789, -0.4972411024934661, -0.021353334982763178, 0.47810032299068606, -0.23881966399830679, -0.25970076647022794, -0.5777192405714082, -0.8574067070271092, -0.44182663708670394, 0.763216765985224, -0.21294243905496052, 0.2963920141458013, -0.09731451379647636, -0.0707415185532011
 		});
 
 		while(!s.hasLost()) {
@@ -32,11 +37,11 @@ public class PlayerSkeleton {
 				// System.out.println("No move will result in a next state.");
 				break;
 			}
-			s.makeMove(move[0], move[1]);
+			s.makeMove(move[State.ORIENT], move[State.SLOT]);
 			// s.draw();
 			// s.drawNext(0,0);
 			// try {
-			// 	Thread.sleep(10000);
+			// 	Thread.sleep(1000);
 			// } catch (InterruptedException e) {
 			// 	e.printStackTrace();
 			// }

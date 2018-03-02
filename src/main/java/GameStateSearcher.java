@@ -31,6 +31,8 @@ public class GameStateSearcher {
         GameState nextGameState = gameState.clone();
         nextGameState.makePlayerMove(orient, slot);
         double moveUtil = utilityFunction.get(nextGameState);
+        // System.out.println(String.format("Considering move %s resulting in util %f...", Arrays.toString(legalMove), moveUtil));
+        // System.out.println(nextGameState + "\n");
         if (moveUtil >= bestMoveUtil) {
           bestMove = legalMove;
           bestMoveUtil = moveUtil;
@@ -49,7 +51,6 @@ public class GameStateSearcher {
         int slot = legalMove[GameState.SLOT];
         GameState nextGameState = gameState.clone();
         nextGameState.makePlayerMove(orient, slot);
-
         double moveUtil = 0;
         for(int i = 0; i < GameState.N_PIECES; i++) {
           GameState nextPredictGameState = nextGameState.clone();
@@ -65,34 +66,5 @@ public class GameStateSearcher {
       }
       return new BestMoveResult(bestMove, bestMoveUtil);
     }
-  }
-
-  // Single-level search
-  public int[] getBestMove(GameState startGameState) {
-    int[][] legalMoves = startGameState.getLegalPlayerMoves();
-    // System.out.println(String.format("Evaluating best move for start game state:"));
-    // System.out.println(startGameState);
-
-    // For each possible move, evaluate the resultant game state and return move with highest utility
-    int[] bestMove = null;
-    double bestMoveUtil = -Double.MAX_VALUE;
-    for (int[] legalMove : legalMoves) {
-      int orient = legalMove[GameState.ORIENT];
-      int slot = legalMove[GameState.SLOT];
-      GameState gameState = startGameState.clone();
-      gameState.makePlayerMove(orient, slot);
-      double moveUtil = utilityFunction.get(gameState);
-      // System.out.println(String.format("Considering move %s resulting in util %f...", Arrays.toString(legalMove), moveUtil));
-      // System.out.println(gameState);
-      if (moveUtil >= bestMoveUtil) {
-        bestMove = legalMove;
-        bestMoveUtil = moveUtil;
-      }
-    }
-
-    // System.out.println(String.format("Best move is %s with util %f", Arrays.toString(bestMove), bestMoveUtil));
-    // System.out.println();
-
-    return bestMove;
   }
 }

@@ -1,5 +1,4 @@
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class GameState {
     public static final int COLS = 10;
@@ -144,53 +143,38 @@ public class GameState {
 
     // State variables
     private HashSet<Integer> field; // Whether field at index is occupied
-    private int nextPiece; // As defined in `State`, -1 for not set
+    private int nextPiece = -1; // As defined in `State`, -1 for not set
     private int orient = -1; // Orientation of the nextPiece, -1 for not set
-    private int lost; // 1 if lost, 0 otherwise  
+    private int lost = 0; // 1 if lost, 0 otherwise  
     private int turn = 0; // Turn count
     private int rowsCleared = 0; // Rows cleared in total
-    private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
-    private int numBlocksInField = 0; // Number of filled squares in level
-    private int columnAggregateHeight = 0; // Sum of all column heights
-
-    private int prevPiece; // Previous piece that was placed, -1 for not set
-    private int numFacesInContactWithEachOther = 0; // Number of contacts between all blocks
-    private int numFacesInContactWithWall = 0; // Number of contacts from all blocks to the wall
-    private int numFacesInContactWithFloor = 0; // Number of contacts from all blocks to the floor
-    private int bottom = 0; // Row corresponding to bottom of piece after falling
 
     // Derived variables
     private int[] top = new int[COLS]; // Column heights
+    private int maxTop; // Max height of column
+    private int columnAggregateHeight = 0; // Sum of all column heights
+    private int rowsClearedInPrevMove = 0; // Rows cleared in prev move
+    private int numBlocksInField = 0; // Number of filled squares in level
+    private double landingHeightInPrevMove = 0; // Landing height in prev move
 
     public GameState() {
         this.field = new HashSet<>();
-        this.nextPiece = -1; // Not set
-        this.lost = 0;
-        this.turn = 0;
-        this.rowsCleared = 0;
-    }
-
-    private void populateField(int[][] field) {
-        this.field = new HashSet<>();
-        for (int r = 0; r < ROWS; r ++) {
-            for (int c = 0; c < COLS; c ++) {
-                this.setField(r, c, field[r][c]);
-            }
-        }
     }
 
     private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
-        int columnAggregateHeight, int rowsClearedInCurrentMove, int numBlocksInField) {
+        int columnAggregateHeight, int rowsClearedInPrevMove, int numBlocksInField, 
+        int maxTop, double landingHeightInPrevMove) {
         this.field = field;
         this.nextPiece = nextPiece;
-        this.prevPiece = nextPiece;
         this.lost = lost;
         this.turn = turn;
         this.rowsCleared = rowsCleared;
         this.top = top;
         this.columnAggregateHeight = columnAggregateHeight;
-        this.rowsClearedInCurrentMove = rowsClearedInCurrentMove;
+        this.rowsClearedInPrevMove = rowsClearedInPrevMove;
         this.numBlocksInField = numBlocksInField;
+        this.maxTop = maxTop;
+        this.landingHeightInPrevMove = landingHeightInPrevMove;
     }
 
     public GameState clone() {
@@ -199,8 +183,8 @@ public class GameState {
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
             this.turn, this.rowsCleared, topClone,
-            this.columnAggregateHeight, this.rowsClearedInCurrentMove, 
-            this.numBlocksInField
+            this.columnAggregateHeight, this.rowsClearedInPrevMove, 
+            this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove
         );
     }
 
@@ -211,15 +195,15 @@ public class GameState {
     }
 
     public int getMaxTopHeight() {
-        return Arrays.stream(top).max().orElse(0);
+        return this.maxTop;
     }
 
     public int getRowsCleared() {
         return this.rowsCleared;
     }
 
-    public int getRowsClearedInCurrentMove() {
-        return this.rowsClearedInCurrentMove;
+    public int getRowsClearedInPrevMove() {
+        return this.rowsClearedInPrevMove;
     }
 
     public int getNumBlocksInField() {
@@ -233,9 +217,8 @@ public class GameState {
 
     // imagine xx___xx, there will be 2 row transitions
     public int getRowTransitions() {
-        int maxFilledRow = Arrays.stream(top).max().getAsInt();
         int transitions = 0;
-        for (int r = 0; r < maxFilledRow; r++) {
+        for (int r = 0; r < this.maxTop; r++) {
             transitions += getRowTransitionsAt(r);
         }
         return transitions;
@@ -311,83 +294,54 @@ public class GameState {
     // }
 
     // This heuristic encourages smoothness of the "terrain" (TOP only)
-    public int getBumpiness(int powerFactor) {
+    public int getBumpiness() {
         int bumpiness = 0;
         for (int c = 0; c < COLS - 1; c++) {
-            bumpiness += Math.pow(Math.abs(top[c] - top[c + 1]), powerFactor);
+            bumpiness += Math.abs(top[c] - top[c + 1]);
         }
         return bumpiness;
     }
 
     // This heuristic discourages formation of wells
     // Wells is defined as a 1-block wide valley.
-    public int getWells(int powerFactor) {
+    public int getWells() {
         int wellScore = 0;
+        int temp;
         if (top[0] < top[1]) {
-            wellScore += Math.pow(top[0] - top[1], powerFactor);
+            temp = top[0] - top[1];
+            wellScore += temp * temp;
         }
         for (int c = 1; c < COLS - 1; c++) {
             if (top[c - 1] > top[c] && top[c + 1] > top[c]) {
-                wellScore += Math.pow(Math.min(top[c - 1], top[c + 1]) - top[c], powerFactor);
+                temp = Math.min(top[c - 1], top[c + 1]) - top[c];
+                wellScore += temp * temp;
             }
         }
         if (top[COLS - 1] < top[COLS - 2]) {
-            wellScore += Math.pow(top[COLS - 1] - top[COLS - 2], powerFactor);
+            temp = top[COLS - 1] - top[COLS - 2];
+            wellScore += temp * temp;
         }
         return wellScore;
     }
 
     // The height where the piece is put (= the height of the column + (the height of the piece / 2))
-    public int getLandingHeight() {
-        assert this.orient != -1; // orient should be set by makePlayerMove
-        assert this.prevPiece != -1; // orient should be set by makePlayerMove
-        return this.bottom + (P_HEIGHT[this.prevPiece][this.orient] / 2);
+    public double getPrevLandingHeight() {
+        return this.landingHeightInPrevMove;
     }
     
-    public int getAverageHeightOfCols() {
-        int totalHeight = 0;
-        for (int c = 0; c < COLS; c++) {
-            totalHeight += top[c];
-        }
-        return (totalHeight / COLS);
+    public double getAverageHeightOfCols() {
+        return (this.columnAggregateHeight / COLS);
     }
 
     public int getMeanHeightDifference() {
         // Average of the difference between the height of each col and the mean height of the state
         int meanHeightDifference = 0;
-        int average = getAverageHeightOfCols();
+        double average = this.getAverageHeightOfCols();
         for (int c = 0; c < COLS; c++) {
-            meanHeightDifference += Math.abs(average - top[c]);
+            meanHeightDifference += Math.abs(average - this.top[c]);
         }
         meanHeightDifference = meanHeightDifference / COLS;
         return meanHeightDifference;
-    }
-
-    // This heuristic encourages the completion of rows
-    public int erodedPieceCells() {
-        // Number of rows that cleared x Number of blocks of the variant that got destroyed
-        if (rowsClearedInCurrentMove > 0) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
-    public int getNumEdgesTouchingAnotherBlock() {
-        int count = 0;
-        for (int c = 0; c < COLS; c++) {
-            for (int r = 0; r < top[c]; r++) {
-                if (this.getField(r, c) != 0) {
-                    if (c < COLS - 1 && this.getField(r, c + 1) != 0) {
-                        count++;
-                    }
-                    if (r < ROWS - 1 && this.getField(r + 1, c) != 0) {
-                        count++;
-                    }
-                }
-            }
-        }
-        return count;
     }
 
     public int getNumEdgesTouchingCeiling() {
@@ -403,7 +357,7 @@ public class GameState {
     public int getNumEdgesTouchingTheWall() {
         int count = 0;
         for (int c = 0; c < COLS; c += COLS - 1) {
-            for (int r = 0; r < ROWS; r++) {
+            for (int r = 0; r < top[c]; r++) {
                 if (this.getField(r, c) != 0) {
                     count++;
                 }
@@ -435,13 +389,10 @@ public class GameState {
         return this.lost;
     }
 
+    // returns moveUtil
     public void makePlayerMove(int orient, int slot) {
         if (this.nextPiece == -1) {
             throw new IllegalStateException();
-        }
-
-        if (this.lost == 1) {
-            return; // Lost already la
         }
 
         int nextPiece = this.nextPiece;
@@ -455,6 +406,8 @@ public class GameState {
             bottom = Math.max(bottom, this.top[slot + c] - P_BOTTOM[nextPiece][orient][c]);
         }
 
+        this.landingHeightInPrevMove = bottom + ((double)P_HEIGHT[nextPiece][orient] / 2);
+        
         // Check if game ended
         if (bottom + P_HEIGHT[nextPiece][orient] > ROWS) {
             this.lost = 1;
@@ -477,11 +430,13 @@ public class GameState {
             int newTop = bottom + P_TOP[nextPiece][orient][c];
             columnAggregateHeight += newTop - this.top[topIndex];
             this.top[topIndex] = newTop;
+            if(newTop > this.maxTop) {
+                this.maxTop = newTop;
+            }
         }
 
         // Check for full rows and clear them
         for (int r = bottom + P_HEIGHT[nextPiece][orient] - 1; r >= bottom; r--) {
-
             // Check all columns in the row
             boolean full = true;
             for (int c = 0; c < COLS; c++) {
@@ -494,7 +449,8 @@ public class GameState {
             // If the row was full - remove it and slide above stuff down
             if (full) {
                 this.numBlocksInField -= COLS;
-                this.rowsClearedInCurrentMove++;
+                this.rowsClearedInPrevMove++;
+                this.maxTop--;
                 // For each column
                 for (int c = 0; c < COLS; c++) {
                     // Slide down all bricks
@@ -514,8 +470,7 @@ public class GameState {
         }
 
         this.nextPiece = -1;
-        this.rowsCleared += this.rowsClearedInCurrentMove;
-        this.bottom = bottom;
+        this.rowsCleared += this.rowsClearedInPrevMove;
     }
 
     public int getStateNextPiece() {
@@ -528,7 +483,7 @@ public class GameState {
         }
 
         this.nextPiece = piece;
-        this.rowsClearedInCurrentMove = 0;
+        this.rowsClearedInPrevMove = 0;
     }
 
     // On player's turn, get legal moves for player as an array of {slot, orient} duples
@@ -549,11 +504,13 @@ public class GameState {
     public String toString() {
         return String.format(
                 "# State \n" + "## field \n" + "%s \n" + "## nextPiece: %d \n" + "## lost: %d \n" + "## turn: %d \n"
-                        + "## rowsCleared: %d \n" + "# Derived state \n" + "## top: %s \n\n" 
-                        + "## columnAggregateHeight: %s \n\n" + "## rowsClearedInCurrentMove: %s \n\n"
-                        + "## numBlocksInField: %s \n\n",
+                        + "## rowsCleared: %d \n" + "# Derived state \n" + "## top: %s \n" 
+                        + "## columnAggregateHeight: %s \n" + "## rowsClearedInPrevMove: %s \n"
+                        + "## numBlocksInField: %s \n" + "## maxTop: %s \n" + "## landingHeightInPrevMove: %s",
                 this.getPrettyPrintFieldString(this.field), this.nextPiece, this.lost, this.turn, this.rowsCleared,
-                Arrays.toString(this.top), this.columnAggregateHeight, this.rowsClearedInCurrentMove, this.numBlocksInField);
+                Arrays.toString(this.top), this.columnAggregateHeight, this.rowsClearedInPrevMove, this.numBlocksInField,
+                this.maxTop, this.landingHeightInPrevMove
+        );
     }
 
     private String getPrettyPrintFieldString(HashSet<Integer> field) {

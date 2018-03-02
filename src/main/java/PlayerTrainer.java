@@ -31,16 +31,18 @@ public class PlayerTrainer {
 	
 			int rowsCleared = 0;
 			for (int j = 0; j < CANDIDATE_TEST_NO_OF_TRIES; j ++) {
+				State state = new State();
 				GameState gameState = new GameState();
 				while(gameState.hasPlayerLost() == 0) {
 					// Randomly get a piece
-					int nextPiece = gameState.getRandomNextPiece();
+					int nextPiece = state.getNextPiece();
 					gameState.setNextPiece(nextPiece);
 					GameStateSearcher.BestMoveResult result = gameStateSearcher.searchNLevelsDFS(gameState, 1);
 					int[] move = result.move;
+					state.makeMove(move[State.ORIENT], move[State.SLOT]);
 					gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT]);
 				}
-				rowsCleared += gameState.getRowsCleared(); 
+				rowsCleared += state.getRowsCleared(); 
 			}
 
 			double averageRowsCleared = (double)rowsCleared / CANDIDATE_TEST_NO_OF_TRIES;
