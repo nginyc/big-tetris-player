@@ -2,22 +2,20 @@
 public class PlayerSkeleton {
 
 	private GameStateSearcher gameStateSearcher;
+	private GameState gameState;
 	private GameStateUtilityFunction utilityFunction;
 
 	public PlayerSkeleton(double[] weights) {
+		this.gameState = new GameState();
 		this.utilityFunction = new GameStateUtilityFunction(weights);
 		this.gameStateSearcher = new GameStateSearcher(utilityFunction);
 	}
 
 	//implement this function to have a working system
 	public int[] pickMove(State s) {
-		GameState gameState = new GameState(
-			this.getBoardField(s), s.getNextPiece(),
-			s.lost ? 1 : 0, s.getTurnNumber(), s.getRowsCleared()
-		);
-
-		GameStateSearcher.BestMoveResult result = this.gameStateSearcher.searchNLevelsDFS(gameState, 1);
-		
+		this.gameState.setNextPiece(s.getNextPiece());
+		GameStateSearcher.BestMoveResult result = this.gameStateSearcher.searchNLevelsDFS(this.gameState, 1);
+		this.gameState.makePlayerMove(result.move[0], result.move[1]);
 		return result.move;
 	}
 
@@ -25,7 +23,7 @@ public class PlayerSkeleton {
 		State s = new State();
 		// new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			0.3558897587671985, 0.5578360670485542, 0.15301938433107315, 0.7744246767898073, 0.3632932494322964, 0.13466182090419002, 0.09534435426024071, 0.1322198150632026, 0.2773706633320931, 0.06468844936537607, 0.8266387046568953, 0.831341087462889, 0.870554870899324, 0.5414074175725934, 0.8112706754176735
+			-0.8793331272057922, 0.3101553510084032, -1, 0.08131740320451719, -0.26371297468266, -0.3641134817118301, 0.3132512371248528, -0.12697638610048667, -0.14414061689164392, -0.33749567608321795, 0.5510232612670767, 0.6468889991303903, -0.11670647424861746, 0.017096300316661317, 0.6207565558500359
 		});
 
 		while(!s.hasLost()) {
@@ -38,24 +36,11 @@ public class PlayerSkeleton {
 			// s.draw();
 			// s.drawNext(0,0);
 			// try {
-			// 	Thread.sleep(10);
+			// 	Thread.sleep(10000);
 			// } catch (InterruptedException e) {
 			// 	e.printStackTrace();
 			// }
 		}
 		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 	}
-	
-	// Make board field compatible
-	private int[][] getBoardField(State s) {
-		int[][] field = s.getField();
-		int[][] fieldNew = new int[GameState.ROWS][GameState.COLS];
-		for (int r = 0; r < GameState.ROWS; r ++) {
-			for (int c = 0; c < GameState.COLS; c ++) {
-				fieldNew[r][c] = field[r][c];
-			}
-		}
-
-		return fieldNew;
-	} 
 }

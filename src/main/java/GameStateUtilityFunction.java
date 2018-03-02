@@ -11,7 +11,7 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 	}
 
 	private double getWeight(int i) {
-		return (this.weights[i] - 0.5) * 2;
+		return this.weights[i];
 	}
 
 	public double get(GameState gameState) {

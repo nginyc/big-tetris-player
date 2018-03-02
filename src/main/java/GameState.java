@@ -151,15 +151,16 @@ public class GameState {
     private int rowsCleared = 0; // Rows cleared in total
     private int rowsClearedInCurrentMove = 0; // Rows cleared in current move
     private int numBlocksInField = 0; // Number of filled squares in level
+    private int columnAggregateHeight = 0; // Sum of all column heights
+
+    private int prevPiece; // Previous piece that was placed, -1 for not set
     private int numFacesInContactWithEachOther = 0; // Number of contacts between all blocks
     private int numFacesInContactWithWall = 0; // Number of contacts from all blocks to the wall
     private int numFacesInContactWithFloor = 0; // Number of contacts from all blocks to the floor
     private int bottom = 0; // Row corresponding to bottom of piece after falling
-    private int columnAggregateHeight = 0;
-    private int prevPiece; // Previous piece that was placed, -1 for not set
 
     // Derived variables
-    private int[] top = new int[COLS]; // Top filled row of each column
+    private int[] top = new int[COLS]; // Column heights
 
     public GameState() {
         this.field = new HashSet<>();
@@ -178,24 +179,8 @@ public class GameState {
         }
     }
 
-    public GameState(int[][] field, int nextPiece, int lost, int turn, int rowsCleared) {
-        // Board field must match COLS and ROWS
-        if (field.length != ROWS || field[0].length != COLS) {
-            throw new IllegalArgumentException();
-        }
-
-        this.field = new HashSet<>();
-        this.nextPiece = nextPiece;
-        this.prevPiece = nextPiece; // To store next piece when it is cleared
-        this.lost = lost;
-        this.turn = turn;
-        this.rowsCleared = rowsCleared;
-        
-        this.populateField(field);
-        this.refreshTop();
-    }
-
-    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top) {
+    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
+        int columnAggregateHeight, int rowsClearedInCurrentMove, int numBlocksInField) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.prevPiece = nextPiece;
@@ -203,6 +188,9 @@ public class GameState {
         this.turn = turn;
         this.rowsCleared = rowsCleared;
         this.top = top;
+        this.columnAggregateHeight = columnAggregateHeight;
+        this.rowsClearedInCurrentMove = rowsClearedInCurrentMove;
+        this.numBlocksInField = numBlocksInField;
     }
 
     public GameState clone() {
@@ -210,7 +198,9 @@ public class GameState {
         int[] topClone = Arrays.stream(this.top).toArray();
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
-            this.turn, this.rowsCleared, topClone
+            this.turn, this.rowsCleared, topClone,
+            this.columnAggregateHeight, this.rowsClearedInCurrentMove, 
+            this.numBlocksInField
         );
     }
 
@@ -238,23 +228,7 @@ public class GameState {
 
     // This heuristic penalizes the volume of the holes
     public int getHolesTotalVolume() {
-        int holes = 0;
-        for (int c = 0; c < COLS; c++) {
-            if (top[c] == 0)
-                continue;
-            holes += getHolesAt(c);
-        }
-        return holes;
-    }
-
-    private int getHolesAt(int c) {
-        int count = 0;
-        for (int i = top[c] - 1; i >= 0; i--) {
-            if (this.getField(i, c) == 0) {
-                count++;
-            }
-        }
-        return count;
+        return this.columnAggregateHeight - this.numBlocksInField;
     }
 
     // imagine xx___xx, there will be 2 row transitions
@@ -326,15 +300,15 @@ public class GameState {
         return blockades;
     }
 
-    public int getBlockadeHolesTotalVolumeMultiplied() {
-        int count = 0;
-        for (int c = 0; c < COLS; c++) {
-            if (top[c] == 0)
-                continue;
-            count += getHolesAt(c) * getBlockadeAt(c);
-        }
-        return count;
-    }
+    // public int getBlockadeHolesTotalVolumeMultiplied() {
+    //     int count = 0;
+    //     for (int c = 0; c < COLS; c++) {
+    //         if (top[c] == 0)
+    //             continue;
+    //         count += getHolesAt(c) * getBlockadeAt(c);
+    //     }
+    //     return count;
+    // }
 
     // This heuristic encourages smoothness of the "terrain" (TOP only)
     public int getBumpiness(int powerFactor) {
@@ -499,9 +473,10 @@ public class GameState {
 
         // Adjust top
         for (int c = 0; c < P_WIDTH[nextPiece][orient]; c++) {
+            int topIndex = slot + c;
             int newTop = bottom + P_TOP[nextPiece][orient][c];
-            columnAggregateHeight += newTop - this.top[slot + c];
-            this.top[slot + c] = newTop;
+            columnAggregateHeight += newTop - this.top[topIndex];
+            this.top[topIndex] = newTop;
         }
 
         // Check for full rows and clear them
@@ -568,22 +543,28 @@ public class GameState {
     public int getRandomNextPiece() {
 		return (int)(Math.random()*N_PIECES);
 	}
-	
+    
+    // WARNING: Don't put this in hot loop due to its inefficiency! Use only for debugging
     @Override
     public String toString() {
         return String.format(
                 "# State \n" + "## field \n" + "%s \n" + "## nextPiece: %d \n" + "## lost: %d \n" + "## turn: %d \n"
-                        + "## rowsCleared: %d \n" + "# Derived state \n" + "## top: %s \n\n",
-                this.field.toString(), this.nextPiece, this.lost, this.turn, this.rowsCleared,
-                Arrays.toString(this.top));
+                        + "## rowsCleared: %d \n" + "# Derived state \n" + "## top: %s \n\n" 
+                        + "## columnAggregateHeight: %s \n\n" + "## rowsClearedInCurrentMove: %s \n\n"
+                        + "## numBlocksInField: %s \n\n",
+                this.getPrettyPrintFieldString(this.field), this.nextPiece, this.lost, this.turn, this.rowsCleared,
+                Arrays.toString(this.top), this.columnAggregateHeight, this.rowsClearedInCurrentMove, this.numBlocksInField);
     }
 
-    // TODO: Restore printing of state
-    // private String getPrettyPrintFieldString(int[][] field) {
-    //     List<int[]> fieldClone = Arrays.stream(field).collect(Collectors.toList());
-    //     Collections.reverse(fieldClone);
-    //     return String.join("\n", fieldClone.stream().map(x -> Arrays.toString(x)).toArray(String[]::new));
-    // }
+    private String getPrettyPrintFieldString(HashSet<Integer> field) {
+        int[][] fieldArray = new int[ROWS][COLS];
+        for (int r = ROWS - 1; r >= 0; r --) {
+            for (int c = 0; c < COLS; c ++) {
+                fieldArray[r][c] = field.contains(this.getFieldIndex(ROWS - 1 - r, c)) ? 1 : 0;
+            }
+        }
+        return String.join("\n", Arrays.stream(fieldArray).map(x -> Arrays.toString(x)).toArray(String[]::new));
+    }
 
     private void setField(int row, int col, int value) {
         int fieldIndex = this.getFieldIndex(row, col);
@@ -596,17 +577,5 @@ public class GameState {
     
     private int getFieldIndex(int row, int col) {
         return row * COLS + col;
-    }
-
-    private void refreshTop() {
-        for (int c = 0; c < COLS; c++) {
-            this.top[c] = 0;
-            for (int r = ROWS - 1; r >= 0; r--) { // From top
-                if (this.getField(r, c) != 0) {
-                    this.top[c] = r + 1;
-                    break;
-                }
-            }
-        }
     }
 }

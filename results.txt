@@ -94,3 +94,63 @@ With d=2 state space search
 
 You have completed 16591 rows.
 BUILD SUCCESSFUL in 16m 52s
+
+// After adding more features
+
+PlayerSkeleton p = new PlayerSkeleton(new double[] {
+    0.3558897587671985, 0.5578360670485542, 0.15301938433107315, 0.7744246767898073, 0.3632932494322964, 0.13466182090419002, 0.09534435426024071, 0.1322198150632026, 0.2773706633320931, 0.06468844936537607, 0.8266387046568953, 0.831341087462889, 0.870554870899324, 0.5414074175725934, 0.8112706754176735
+});
+
+this.getWeight(0) * gameState.getColumnAggregateHeight() + 
+this.getWeight(1) * gameState.getRowsClearedInCurrentMove() + 
+this.getWeight(2) * gameState.getHolesTotalVolume() +
+this.getWeight(3) * gameState.getBumpiness(1) +
+this.getWeight(4) * gameState.getWells(2) +
+this.getWeight(5) * gameState.getLandingHeight() +
+this.getWeight(6) * gameState.getColTransitions() +
+this.getWeight(7) * gameState.getRowTransitions() +
+this.getWeight(8) * gameState.getBlockadesTotalVolume() +
+this.getWeight(9) * gameState.getNumBlocksInField() +
+this.getWeight(10) * gameState.getMeanHeightDifference() +
+this.getWeight(11) * gameState.getNumEdgesTouchingTheWall() +
+this.getWeight(12) * gameState.getNumEdgesTouchingTheFloor() +
+this.getWeight(13) * gameState.getNumEdgesTouchingCeiling() +
+this.getWeight(14) * gameState.getNumEdgesTouchingAnotherBlock()
+
+GameStateUtilityLearner explorer = new GameStateUtilityLearner(
+    3, 25, 20, 0.1, 0.8, 0.5
+);
+
+With d=1 state space search,
+You have completed 161982 rows.
+BUILD SUCCESSFUL in 1m 51s
+   
+Best phenotype of generation 11 has fitness 1037964.3333333334 with weights [0.33655078184098297, 0.8953809158742783, 0.02806803908557113, 0.6578359852494876, 0.33350945893113604, 0.1887958920120428, 0.05430780833549323, 0.0, 0.44975119890680054, 0.31224996271437355, 0.5093198451235672, 0.8436959443607097, 0.9074310600664454, 0.11470332529841232, 0.6811435334569057]
+
+Best phenotype of generation 16 has fitness 1524771.6666666667 with weights [0.3362899347607358, 0.9089564364348965, 0.0, 0.7753367507245128, 0.333666699058551, 0.19673865532099602, 0.04268309679754058, 0.10027301201157546, 0.4544890896840663, 0.344200607748517, 0.3373556411282338, 0.8418856036887519, 0.9584364380909476, 0.16422915461662385, 0.681211648728205]
+
+Best phenotype of generation 17 has fitness 2137540.6666666665 with weights [0.3363764849388103, 0.8878456113653397, 0.019104130347645912, 0.7556795288380325, 0.33361452611103204, 0.19838416400174697, 0.0, 0.10001986018719272, 0.452917037238315, 0.31435555175127317, 0.4334957270106443, 0.8424862824749009, 1.0, 0.17028753695188992, 0.6811890477895441]
+
+GameStateUtilityLearner learner = new GameStateUtilityLearner(
+    10, 20, 25, 0.1, 0.8, 0.5
+);
+
+			this.getWeight(0) * gameState.getColumnAggregateHeight() + 
+			this.getWeight(1) * gameState.getRowsClearedInCurrentMove() + 
+			this.getWeight(2) * gameState.getHolesTotalVolume() +
+			this.getWeight(3) * gameState.getBumpiness(1) +
+			this.getWeight(4) * gameState.getWells(2) +
+			this.getWeight(5) * gameState.getLandingHeight() +
+			this.getWeight(6) * gameState.getColTransitions() +
+			this.getWeight(7) * gameState.getRowTransitions() +
+			this.getWeight(8) * gameState.getBlockadesTotalVolume() +
+			this.getWeight(9) * gameState.getNumBlocksInField() +
+			this.getWeight(10) * gameState.getMeanHeightDifference() +
+            this.getWeight(11) * gameState.getNumEdgesTouchingTheWall() +
+            this.getWeight(12) * gameState.getNumEdgesTouchingTheFloor() +
+            this.getWeight(13) * gameState.getNumEdgesTouchingCeiling() +
+            this.getWeight(14) * gameState.getNumEdgesTouchingAnotherBlock()
+
+Best phenotype of generation 13 has fitness 2323875.0 with weights [0.06033343639710394, 0.6550776755042016, 0.0, 0.5406587016022586, 0.36814351265867, 0.31794325914408494, 0.6566256185624264, 0.43651180694975666, 0.42792969155417804, 0.331252161958391, 0.7755116306335383, 0.8234444995651952, 0.44164676287569127, 0.5085481501583307, 0.8103782779250179]
+
+Then switched to (-1, 1) weights

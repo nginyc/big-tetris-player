@@ -70,18 +70,23 @@ public class GameStateUtilityLearner {
 
 	private double doGaussianMutation(double x, double min, double max) {
 		NormalDistribution dist = new NormalDistribution(x, (max - min) / 10);
-		return Math.min(Math.max(0, dist.sample()), 1);
+		return Math.min(Math.max(-1, dist.sample()), 1);
 	}
 
 	private void initPopulation(double[][] initialWeightsSet) {
-		// In order, each initial weight gets to randomly influence an individual 
+		// Each initial weight gets to be an individual 
+		// Fill the remainding slots with randomly initialized individuals
 		int i = 0;
-		while (i < this.populationSize) {
-			double[] initialWeights = initialWeightsSet[i % initialWeightsSet.length];
+		for (int w = 0; w < initialWeightsSet.length; w ++) {
 			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
-				double w = initialWeights[j];
-				// Do gaussian mutation on every weight
-				this.population[i][j] = this.doGaussianMutation(w, 0f, 1f);
+				this.population[i][j] = initialWeightsSet[w][j];
+			}
+			i ++;
+		}
+
+		while (i < this.populationSize) {
+			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+				this.population[i][j] = (Math.random() - 0.5) * 2;
 			}
 			i++;
 		}
@@ -173,12 +178,7 @@ public class GameStateUtilityLearner {
 	}
 
 	public double[] train() {
-		// Randomly initialize weights
-		double[] weights = new double[WEIGHTS_COUNT];
-		for (int i = 0; i < WEIGHTS_COUNT; i ++) {
-			weights[i] = Math.random();
-		}
-		return train(new double[][] { weights });
+		return train(new double[][] { });
 	}
 
 	public double[] train(double[][] initialWeights) {
