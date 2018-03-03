@@ -493,6 +493,7 @@ public class GameState {
                     }
 
                     // Check bottom
+                    // If the stack of blocks from the bottom has any blocks that is destroyed by the line clear
                     if (this.bottom[c] >= r) {
                         this.bottom[c]--;
                     }
