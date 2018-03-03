@@ -312,7 +312,7 @@ public class GameState {
     public int getNumEdgesTouchingCeiling() {
         int count = 0;
         for (int c = 0; c < COLS; c++) {
-            if (this.getField(ROWS - 1, c) != 0) {
+            if (this.top[c] == ROWS) {
                 count++;
             }
         }
@@ -326,7 +326,7 @@ public class GameState {
     public int getNumEdgesTouchingTheFloor() {
         int count = 0;
         for (int c = 0; c < COLS; c++) {
-            if (this.getField(0, c) != 0) {
+            if (this.bottom[c] > 0) {
                 count++;
             }
         }
