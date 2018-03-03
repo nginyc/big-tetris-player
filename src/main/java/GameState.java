@@ -154,6 +154,7 @@ public class GameState {
     private int[] bottom = new int[COLS]; // Column heights from the bottom
     private int maxTop; // Max height of column
     private int columnAggregateHeight = 0; // Sum of all column heights
+    private int columnAggregateBottomStackHeight = 0; // Sum of all floor stack heights
     private int rowsClearedInPrevMove = 0; // Rows cleared in prev move
     private int numBlocksInField = 0; // Number of filled squares in level
     private double landingHeightInPrevMove = 0; // Landing height in prev move
@@ -165,8 +166,8 @@ public class GameState {
     }
 
     private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
-        int[] bottom, int columnAggregateHeight, int rowsClearedInPrevMove, int numBlocksInField, 
-        int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions) {
+        int[] bottom, int columnAggregateHeight, int columnAggregateBottomStackHeight, int rowsClearedInPrevMove, 
+        int numBlocksInField, int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.lost = lost;
@@ -175,6 +176,7 @@ public class GameState {
         this.top = top;
         this.bottom = bottom;
         this.columnAggregateHeight = columnAggregateHeight;
+        this.columnAggregateBottomStackHeight = columnAggregateBottomStackHeight;
         this.rowsClearedInPrevMove = rowsClearedInPrevMove;
         this.numBlocksInField = numBlocksInField;
         this.maxTop = maxTop;
@@ -191,7 +193,7 @@ public class GameState {
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
             this.turn, this.rowsCleared, topClone, bottomClone,
-            this.columnAggregateHeight, this.rowsClearedInPrevMove, 
+            this.columnAggregateHeight, this.columnAggregateBottomStackHeight, this.rowsClearedInPrevMove, 
             this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove,
             this.numBlocksTouchingWall, rowTransitionsClone
         );
@@ -253,38 +255,8 @@ public class GameState {
 
     // This heuristic penalizes deepness of the holes
     public int getBlockadesTotalVolume() {
-        int blockades = 0;
-        for (int c = 0; c < COLS; c++) {
-            if (top[c] == 0)
-                continue;
-            blockades += getBlockadeAt(c);
-        }
-        return blockades;
+        return this.numBlocksInField - this.columnAggregateBottomStackHeight;
     }
-
-    private int getBlockadeAt(int c) {
-        int potentialBlockades = 0;
-        int blockades = 0;
-        for (int i = top[c] - 1; i >= 0; i--) {
-            if (this.getField(i, c) != 0) {
-                potentialBlockades++;
-            } else {
-                blockades += potentialBlockades;
-                potentialBlockades = 0;
-            }
-        }
-        return blockades;
-    }
-
-    // public int getBlockadeHolesTotalVolumeMultiplied() {
-    //     int count = 0;
-    //     for (int c = 0; c < COLS; c++) {
-    //         if (top[c] == 0)
-    //             continue;
-    //         count += getHolesAt(c) * getBlockadeAt(c);
-    //     }
-    //     return count;
-    // }
 
     // This heuristic encourages smoothness of the "terrain" (TOP only)
     public int getBumpiness() {
@@ -450,7 +422,9 @@ public class GameState {
             // Checks if the newly placed piece continues the stack from the bottom
             // If there exists a hole in that column, there is no change to bottom[col]
             if (this.bottom[colIndex] + 1 == bottomPiece + P_BOTTOM[nextPiece][orient][c]) {
-                this.bottom[colIndex] += P_TOP[nextPiece][orient][c] - P_BOTTOM[nextPiece][orient][c];
+                int stackHeightChange = P_TOP[nextPiece][orient][c] - P_BOTTOM[nextPiece][orient][c];
+                this.columnAggregateBottomStackHeight += stackHeightChange;
+                this.bottom[colIndex] += stackHeightChange;
             }
         }
 
@@ -496,6 +470,7 @@ public class GameState {
                     // If the stack of blocks from the bottom has any blocks that is destroyed by the line clear
                     if (this.bottom[c] >= r) {
                         this.bottom[c]--;
+                        this.columnAggregateBottomStackHeight--;
                     }
                 }
             }
