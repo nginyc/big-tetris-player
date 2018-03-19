@@ -160,6 +160,7 @@ public class GameState {
     private double landingHeightInPrevMove = 0; // Landing height in prev move
     private int numBlocksTouchingWall = 0;
     private int[] rowTransitions = new int[ROWS]; // number of transitions from blocks to hole to block in each row
+    private int[] colTransitions = new int[COLS]; // number of transitions from blocks to hole to block in each row
 
     public GameState() {
         this.field = new HashSet<>();
@@ -167,7 +168,8 @@ public class GameState {
 
     private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
         int[] bottom, int columnAggregateHeight, int columnAggregateBottomStackHeight, int rowsClearedInPrevMove, 
-        int numBlocksInField, int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions) {
+        int numBlocksInField, int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions, 
+        int[] colTransitions) {
         this.field = field;
         this.nextPiece = nextPiece;
         this.lost = lost;
@@ -183,6 +185,7 @@ public class GameState {
         this.landingHeightInPrevMove = landingHeightInPrevMove;
         this.numBlocksTouchingWall = numBlocksTouchingWall;
         this.rowTransitions = rowTransitions;
+        this.colTransitions = colTransitions;
     }
 
     public GameState clone() {
@@ -190,12 +193,13 @@ public class GameState {
         int[] topClone = Arrays.stream(this.top).toArray();
         int[] bottomClone = Arrays.stream(this.bottom).toArray();
         int[] rowTransitionsClone = Arrays.stream(this.rowTransitions).toArray();
+        int[] colTransitionsClone = Arrays.stream(this.colTransitions).toArray();
         return new GameState(
             fieldClone, this.nextPiece, this.lost, 
             this.turn, this.rowsCleared, topClone, bottomClone,
             this.columnAggregateHeight, this.columnAggregateBottomStackHeight, this.rowsClearedInPrevMove, 
             this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove,
-            this.numBlocksTouchingWall, rowTransitionsClone
+            this.numBlocksTouchingWall, rowTransitionsClone, colTransitionsClone
         );
     }
 
@@ -232,25 +236,7 @@ public class GameState {
     }
 
     public int getColTransitions() {
-        int transitions = 0;
-        for (int c = 0; c < COLS; c++) {
-            if (top[c] == 0)
-                continue;
-            transitions += getColTransitionsAt(c);
-        }
-        return transitions;
-    }
-
-    private int getColTransitionsAt(int c) {
-        int count = 0;
-        int lastScanned = 0; // 0 if not filled, 1 if filled
-        for (int i = top[c] - 1; i >= 0; i--) {
-            if ((this.getField(i, c) != 0 && lastScanned == 0) || (lastScanned != 0 && this.getField(i, c) == 0)) {
-                count++;
-            }
-            lastScanned = this.getField(i, c);
-        }
-        return count;
+        return Arrays.stream(this.colTransitions).sum();
     }
 
     // This heuristic penalizes deepness of the holes
@@ -380,26 +366,63 @@ public class GameState {
         // Fill in the appropriate blocks
         // For each column in the piece 
         for (int i = 0; i < P_WIDTH[nextPiece][orient]; i++) {
+            
+            int colBefore = i + slot - 1;
+            int colAfter = i + slot + 1;
+            
             // From bottom to top of piece
             for (int h = bottomPiece + P_BOTTOM[nextPiece][orient][i]; h < bottomPiece + P_TOP[nextPiece][orient][i]; h++) {
                 this.setField(h, i + slot, turn);
+                
+                // Calculate col transitions
+                int rowBefore = h - 1;
+                int rowAfter = h + 1;
+
+                int cellRowBefore = this.getField(rowBefore, i + slot);
+                int cellRowAfter = this.getField(rowAfter, i + slot);
+
+                if (rowBefore >= 0) {
+                    if (cellRowBefore == 0) {
+                        // Col before is empty
+                        this.colTransitions[i + slot] += 1;
+                    } else if (cellRowBefore > 0) {
+                        // Col before is filled
+                        this.colTransitions[i + slot] -= 1;
+                    }
+                }
+
+                if (rowAfter < ROWS) {
+                    if (cellRowAfter == 0) {
+                        // Col after is empty
+                        this.colTransitions[i + slot] += 1;
+                    } else if (cellRowAfter > 0) {
+                        // Col after is filled
+                        this.colTransitions[i + slot] -= 1;
+                    }
+                }
 
                 // Calculate row transitions
-                int colBefore = i + slot - 1;
-                int colAfter = i + slot + 1;
-                if (colBefore >= 0 && this.getField(h, colBefore) == 0) {
-                    // Col before is empty
-                    this.rowTransitions[h] += 1;
-                } else if (colBefore >= 0 && this.getField(h, colBefore) > 0) {
-                    // Col before is filled
-                    this.rowTransitions[h] -= 1;
+                int cellColBefore = this.getField(h, colBefore);
+                int cellColAfter = this.getField(h, colAfter);
+
+                if (colBefore >= 0) {
+                    if (cellColBefore == 0) {
+                        // Col before is empty
+                        this.rowTransitions[h] += 1;
+                    } else if (cellColBefore > 0) {
+                        // Col before is filled
+                        this.rowTransitions[h] -= 1;
+                    }
                 }
-                if (colAfter < COLS && this.getField(h, colAfter) == 0) {
-                    // Col after is empty
-                    this.rowTransitions[h] += 1;
-                } else if (colAfter < COLS && this.getField(h, colAfter) > 0) {
-                    // Col after is filled
-                    this.rowTransitions[h] -= 1;
+
+                if (colAfter < COLS) {
+                    if (cellColAfter == 0) {
+                        // Col after is empty
+                        this.rowTransitions[h] += 1;
+                    } else if (cellColAfter > 0) {
+                        // Col after is filled
+                        this.rowTransitions[h] -= 1;
+                    }
                 }
             }
             // If the rightmost col of the current piece touches the wall
@@ -447,7 +470,7 @@ public class GameState {
                 this.numBlocksTouchingWall -= 2;
 
                 // Move down row transitions
-                for(int i = r; i < ROWS - 1; i++) {
+                for (int i = r; i < ROWS - 1; i++) {
                     this.rowTransitions[i] = this.rowTransitions[i+1];
                 }
 
@@ -456,6 +479,15 @@ public class GameState {
                     // Slide down all bricks
                     for (int i = r; i < this.top[c]; i++) {
                         this.setField(i, c, (i + 1 < ROWS) ? this.getField(i + 1, c) : 0);
+                    }
+
+                    // Update col transitions (Only when blocks above and below are empty then the colTransitions change)
+                    if (c == 0 && this.getField(r, c + 1) == 0) {
+                        this.colTransitions[c] -= 2;
+                    } else if (c == COLS - 1 && this.getField(r, c - 1) == 0) {
+                        this.colTransitions[c] -= 2;
+                    } else if (this.getField(r, c - 1) == 0 && this.getField(r, c + 1) == 0) {
+                        this.colTransitions[c] -= 2;
                     }
 
                     // Lower top
