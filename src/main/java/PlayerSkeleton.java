@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class PlayerSkeleton {
 
 	private GameStateSearcher gameStateSearcher;
@@ -7,7 +5,7 @@ public class PlayerSkeleton {
 	private GameStateUtilityFunction utilityFunction;
 
 	public PlayerSkeleton(double[] weights) {
-		this.gameState = new GameState();
+		this.gameState = new GameState(State.ROWS);
 		this.utilityFunction = new GameStateUtilityFunction(weights);
 		this.gameStateSearcher = new GameStateSearcher(utilityFunction);
 	}
@@ -17,11 +15,10 @@ public class PlayerSkeleton {
 		this.gameState.setNextPiece(s.getNextPiece());
 		// System.out.println("At game state:");
 		// System.out.println(this.gameState + "\n");
-		GameStateSearcher.BestMoveResult result = this.gameStateSearcher.searchNLevelsDFS(this.gameState, 1);
+		int[] move = this.gameStateSearcher.search(this.gameState);
 		// Actually make the best move
-		this.gameState.makePlayerMove(result.move[0], result.move[1]);
-		// System.out.println(String.format("Best move %s resulted in util %f.", Arrays.toString(result.move), result.moveUtil));
-		return result.move;
+		this.gameState.makePlayerMove(move[0], move[1]);
+		return move;
 	}
 
 	public static void main(String[] args) {

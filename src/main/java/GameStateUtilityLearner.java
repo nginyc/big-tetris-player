@@ -13,21 +13,24 @@ public class GameStateUtilityLearner {
 	private HashSet<Integer> individualsSelected;
 	private ArrayList<Integer> individualsSelectedList;
 	private Object[] individualsTaskFutures;
-	private double totalFitness = 0;
+	private ExecutorService executor;
 
+	// Learning hyperparameters
+	private int rows;
 	private int noOfTriesPerIndividual;
 	private int noOfGenerations;
 	private int populationSize; 
+	private int weightsCount;
 	private double mutationProb;
 	private double selectedFraction;
 	private double tournamentSampleRatio;
-	private ExecutorService executor;
 
-	public static int WEIGHTS_COUNT = 15;
 	public static int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
-	public GameStateUtilityLearner(int noOfTriesPerIndividual, int noOfGenerations,
+	public GameStateUtilityLearner(int rows, int weightsCount, int noOfTriesPerIndividual, int noOfGenerations,
 		int populationSize, double mutationProb, double selectedFraction, double tournamentSampleRatio) {
+		this.rows = rows;
+		this.weightsCount = weightsCount;
 		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
 		this.noOfGenerations = noOfGenerations;
 		this.populationSize = populationSize;
@@ -35,7 +38,7 @@ public class GameStateUtilityLearner {
 		this.tournamentSampleRatio = tournamentSampleRatio;
 		this.selectedFraction = selectedFraction;
 
-		this.population = new double[this.populationSize][WEIGHTS_COUNT];
+		this.population = new double[this.populationSize][this.weightsCount];
 		this.individualsFitness = new double[this.populationSize];
 		this.individualsSelected = new HashSet<>(this.populationSize);
 		this.individualsSelectedList = new ArrayList<>(this.populationSize);
@@ -43,7 +46,7 @@ public class GameStateUtilityLearner {
 	}
 
 	private double getFitness(double[] weights) {
-		if (weights.length != WEIGHTS_COUNT) {
+		if (weights.length != this.weightsCount) {
 			throw new IllegalStateException();
 		}
 
@@ -52,13 +55,12 @@ public class GameStateUtilityLearner {
 
 		int rowsCleared = 0;
 		for (int i = 0; i < this.noOfTriesPerIndividual; i ++) {
-			GameState gameState = new GameState();
+			GameState gameState = new GameState(this.rows);
 			while(gameState.hasPlayerLost() == 0) {
 				// Randomly get a piece
 				int nextPiece = gameState.getRandomNextPiece();
 				gameState.setNextPiece(nextPiece);
-				GameStateSearcher.BestMoveResult result = gameStateSearcher.searchNLevelsDFS(gameState, 1);
-				int[] move = result.move;
+				int[] move = gameStateSearcher.search(gameState);
 				gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT]);
 			}
 			rowsCleared += gameState.getRowsCleared(); 
@@ -78,14 +80,14 @@ public class GameStateUtilityLearner {
 		// Fill the remainding slots with randomly initialized individuals
 		int i = 0;
 		for (int w = 0; w < initialWeightsSet.length; w ++) {
-			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+			for (int j = 0; j < this.weightsCount; j ++) {
 				this.population[i][j] = initialWeightsSet[w][j];
 			}
 			i ++;
 		}
 
 		while (i < this.populationSize) {
-			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+			for (int j = 0; j < this.weightsCount; j ++) {
 				this.population[i][j] = (Math.random() - 0.5) * 2;
 			}
 			i++;
@@ -118,31 +120,20 @@ public class GameStateUtilityLearner {
 	private void evaluatePopulationFitness() {
 		for (int i = 0; i < this.populationSize; i ++) {
 			final double[] individual = this.population[i];
-			this.individualsTaskFutures[i] = executor.submit(() -> {
+			this.individualsTaskFutures[i] = this.executor.submit(() -> {
 				return this.getFitness(individual);
 			});
 		}
 
-		double min = Double.MAX_VALUE;
 		for (int i = 0; i < this.populationSize; i ++) {
 			try {
 				Future<Double> future = (Future<Double>)this.individualsTaskFutures[i];
 				this.individualsFitness[i] = future.get();
-				if (this.individualsFitness[i] < min) {
-					min = this.individualsFitness[i];
-				}
 			} catch (ExecutionException error) {
-				throw new Error("Execution exception reached.");
+				throw new Error("Execution exception reached: " + error.getMessage());
 			} catch (InterruptedException error) {
-				throw new Error("Interrupted exception reached.");
+				throw new Error("Interrupted exception reached: " + error.getMessage());
 			}
-		}
-
-		// Ensure that all fitness scores are positive
-		this.totalFitness = 0;
-		for (int i = 0; i < this.populationSize; i ++) {
-			this.individualsFitness[i] = this.individualsFitness[i] + min;
-			this.totalFitness += this.individualsFitness[i];
 		}
 	}
 
@@ -160,7 +151,7 @@ public class GameStateUtilityLearner {
 				double p1Fitness = this.individualsFitness[p1Index];
 				double p2Fitness = this.individualsFitness[p2Index];
 				double ratio = (p1Fitness == 0) ? 0 : p1Fitness / (p1Fitness + p2Fitness);
-				for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+				for (int j = 0; j < this.weightsCount; j ++) {
 					this.population[i][j] = ratio * p1[j] + (1 - ratio) * p2[j];
 				} 
 			}
@@ -169,7 +160,7 @@ public class GameStateUtilityLearner {
 
 	private void doRandomMutation() {
 		for (int i = 0; i < this.populationSize; i ++) {
-			for (int j = 0; j < WEIGHTS_COUNT; j ++) {
+			for (int j = 0; j < this.weightsCount; j ++) {
 				if (Math.random() < this.mutationProb) {
 					this.population[i][j] = doGaussianMutation(this.population[i][j], 0, 1);
 				}
@@ -182,7 +173,7 @@ public class GameStateUtilityLearner {
 	}
 
 	public double[] train(double[][] initialWeights) {
-		executor = Executors.newFixedThreadPool(MAX_THREAD_COUNT);
+		this.executor = Executors.newFixedThreadPool(MAX_THREAD_COUNT);
 
 		this.initPopulation(initialWeights);
 
@@ -204,7 +195,7 @@ public class GameStateUtilityLearner {
 			} 
 		}
 
-		executor.shutdown();
+		this.executor.shutdown();
 
 		return bestWeights;
 	}    

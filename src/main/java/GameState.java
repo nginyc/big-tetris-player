@@ -2,8 +2,6 @@ import java.util.*;
 
 public class GameState {
     public static final int COLS = 10;
-    public static final int ROWS = 20;
-
     public static final int N_PIECES = 7;
     public static final int ORIENT = 0;
     public static final int SLOT = 1;
@@ -142,6 +140,7 @@ public class GameState {
     }
 
     // State variables
+    private int rows; // No. of rows
     private HashSet<Integer> field; // Whether field at index is occupied
     private int nextPiece = -1; // As defined in `State`, -1 for not set
     private int orient = -1; // Orientation of the nextPiece, -1 for not set
@@ -150,8 +149,8 @@ public class GameState {
     private int rowsCleared = 0; // Rows cleared in total
 
     // Derived variables
-    private int[] top = new int[COLS]; // Column heights
-    private int[] bottom = new int[COLS]; // Column heights from the bottom
+    private int[] top; // Column heights
+    private int[] bottom; // Column heights from the bottom
     private int maxTop; // Max height of column
     private int columnAggregateHeight = 0; // Sum of all column heights
     private int columnAggregateBottomStackHeight = 0; // Sum of all floor stack heights
@@ -159,15 +158,20 @@ public class GameState {
     private int numBlocksInField = 0; // Number of filled squares in level
     private double landingHeightInPrevMove = 0; // Landing height in prev move
     private int numBlocksTouchingWall = 0;
-    private int[] rowTransitions = new int[ROWS]; // number of transitions from blocks to hole to block in each row
+    private int[] rowTransitions; // number of transitions from blocks to hole to block in each row
 
-    public GameState() {
+    public GameState(int rows) {
+        this.rows = rows;
+        this.top = new int[COLS];
+        this.bottom = new int[COLS];
+        this.rowTransitions = new int[this.rows];
         this.field = new HashSet<>();
     }
 
-    private GameState(HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
+    private GameState(int rows, HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
         int[] bottom, int columnAggregateHeight, int columnAggregateBottomStackHeight, int rowsClearedInPrevMove, 
         int numBlocksInField, int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions) {
+        this.rows = rows;
         this.field = field;
         this.nextPiece = nextPiece;
         this.lost = lost;
@@ -191,7 +195,7 @@ public class GameState {
         int[] bottomClone = Arrays.stream(this.bottom).toArray();
         int[] rowTransitionsClone = Arrays.stream(this.rowTransitions).toArray();
         return new GameState(
-            fieldClone, this.nextPiece, this.lost, 
+            this.rows, fieldClone, this.nextPiece, this.lost, 
             this.turn, this.rowsCleared, topClone, bottomClone,
             this.columnAggregateHeight, this.columnAggregateBottomStackHeight, this.rowsClearedInPrevMove, 
             this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove,
@@ -312,7 +316,7 @@ public class GameState {
     public int getNumEdgesTouchingCeiling() {
         int count = 0;
         for (int c = 0; c < COLS; c++) {
-            if (this.top[c] == ROWS) {
+            if (this.top[c] == this.rows) {
                 count++;
             }
         }
@@ -366,7 +370,7 @@ public class GameState {
         this.landingHeightInPrevMove = bottomPiece + ((double)P_HEIGHT[nextPiece][orient] / 2);
         
         // Check if game ended
-        if (bottomPiece + P_HEIGHT[nextPiece][orient] > ROWS) {
+        if (bottomPiece + P_HEIGHT[nextPiece][orient] > this.rows) {
             this.lost = 1;
             this.nextPiece = -1;
             return;
@@ -447,7 +451,7 @@ public class GameState {
                 this.numBlocksTouchingWall -= 2;
 
                 // Move down row transitions
-                for(int i = r; i < ROWS - 1; i++) {
+                for(int i = r; i < this.rows - 1; i++) {
                     this.rowTransitions[i] = this.rowTransitions[i+1];
                 }
 
@@ -455,7 +459,7 @@ public class GameState {
                 for (int c = 0; c < COLS; c++) {
                     // Slide down all bricks
                     for (int i = r; i < this.top[c]; i++) {
-                        this.setField(i, c, (i + 1 < ROWS) ? this.getField(i + 1, c) : 0);
+                        this.setField(i, c, (i + 1 < this.rows) ? this.getField(i + 1, c) : 0);
                     }
 
                     // Lower top
@@ -522,10 +526,10 @@ public class GameState {
     }
 
     private String getPrettyPrintFieldString(HashSet<Integer> field) {
-        int[][] fieldArray = new int[ROWS][COLS];
-        for (int r = ROWS - 1; r >= 0; r --) {
+        int[][] fieldArray = new int[this.rows][COLS];
+        for (int r = this.rows - 1; r >= 0; r --) {
             for (int c = 0; c < COLS; c ++) {
-                fieldArray[r][c] = field.contains(this.getFieldIndex(ROWS - 1 - r, c)) ? 1 : 0;
+                fieldArray[r][c] = field.contains(this.getFieldIndex(this.rows - 1 - r, c)) ? 1 : 0;
             }
         }
         return String.join("\n", Arrays.stream(fieldArray).map(x -> Arrays.toString(x)).toArray(String[]::new));

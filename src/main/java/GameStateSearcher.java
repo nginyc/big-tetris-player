@@ -1,70 +1,62 @@
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 // Given a game state and a utility function, returns best move
 public class GameStateSearcher {
 
+  public static int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
+  
+	private Object[] legalMovesTaskFutures;
+  private ExecutorService executor;
+  
   private IGameStateUtilityFunction utilityFunction;
 
 	public GameStateSearcher(IGameStateUtilityFunction utilityFunction) {
     this.utilityFunction = utilityFunction;
+    this.legalMovesTaskFutures = new Object[GameState.COLS * 4]; 
   }
 
-  public static class BestMoveResult {
-    public int[] move;
-    public double moveUtil; 
-    private BestMoveResult(int[] move, double moveUtil) {
-      this.move = move;
-      this.moveUtil = moveUtil;
-    }
-  }
+  // Search for best move 2-depth
+  public int[] search(GameState gameState) {
+		this.executor = Executors.newFixedThreadPool(MAX_THREAD_COUNT);
+    int[][] legalMoves = gameState.getLegalPlayerMoves();
 
-  public BestMoveResult searchNLevelsDFS(GameState gameState, int searchDepth) {
-    // A state here is defined as a { board, nextPiece != -1 }
-    if(searchDepth <= 1) {
-      // Leaf node found. The util of this state = util of the board state after the best possible move
-      int[][] legalMoves = gameState.getLegalPlayerMoves();
-      int[] bestMove = null;
-      double bestMoveUtil = -Double.MAX_VALUE;
-      for (int[] legalMove : legalMoves) {
+    for (int i = 0; i < legalMoves.length; i ++) {
+      final int[] legalMove = legalMoves[i];
+      this.legalMovesTaskFutures[i] = this.executor.submit(() -> {
+        // Calculate move util
         int orient = legalMove[GameState.ORIENT];
         int slot = legalMove[GameState.SLOT];
         GameState nextGameState = gameState.clone();
         nextGameState.makePlayerMove(orient, slot);
         double moveUtil = utilityFunction.get(nextGameState);
-        // System.out.println(String.format("Considering move %s resulting in util %f...", Arrays.toString(legalMove), moveUtil));
-        // System.out.println(nextGameState + "\n");
-        if (moveUtil >= bestMoveUtil) {
-          bestMove = legalMove;
-          bestMoveUtil = moveUtil;
-        }
-      }
-
-      return new BestMoveResult(bestMove, bestMoveUtil);
-    } else {
-
-      int[][] legalMoves = gameState.getLegalPlayerMoves();
-      int[] bestMove = null;
-      
-      double bestMoveUtil = -Double.MAX_VALUE;
-      for (int[] legalMove : legalMoves) {
-        int orient = legalMove[GameState.ORIENT];
-        int slot = legalMove[GameState.SLOT];
-        GameState nextGameState = gameState.clone();
-        nextGameState.makePlayerMove(orient, slot);
-        double moveUtil = 0;
-        for(int i = 0; i < GameState.N_PIECES; i++) {
-          GameState nextPredictGameState = nextGameState.clone();
-          nextPredictGameState.setNextPiece(i);
-          BestMoveResult result = searchNLevelsDFS(nextPredictGameState, searchDepth - 1);
-          moveUtil += result.moveUtil / GameState.N_PIECES;
-        }
-
-        if (moveUtil >= bestMoveUtil) {
-          bestMove = legalMove;
-          bestMoveUtil = moveUtil;
-        }
-      }
-      return new BestMoveResult(bestMove, bestMoveUtil);
+				return moveUtil;
+			});
     }
+
+    int[] bestMove = null;
+    double bestMoveUtil = -Double.MAX_VALUE;
+    for (int i = 0; i < legalMoves.length; i ++) {
+      int[] legalMove = legalMoves[i];
+      try {
+				Future<Double> future = (Future<Double>)this.legalMovesTaskFutures[i];
+				double moveUtil = future.get();
+        if (moveUtil >= bestMoveUtil) {
+          bestMove = legalMove;
+          bestMoveUtil = moveUtil;
+        }
+			} catch (ExecutionException error) {
+				throw new Error("Execution exception reached: " + error.getMessage());
+			} catch (InterruptedException error) {
+				throw new Error("Interrupted exception reached: " + error.getMessage());
+			}
+    }
+
+    this.executor.shutdown();
+
+    return bestMove;
   }
 }
