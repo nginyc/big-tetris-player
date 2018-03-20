@@ -5,7 +5,7 @@ public class PlayerSkeleton {
 	private GameStateUtilityFunction utilityFunction;
 
 	public PlayerSkeleton(double[] weights) {
-		this.gameState = new GameState(State.ROWS);
+		this.gameState = new GameState(State.ROWS - 1);
 		this.utilityFunction = new GameStateUtilityFunction(weights);
 		this.gameStateSearcher = new GameStateSearcher(utilityFunction);
 	}

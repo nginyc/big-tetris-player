@@ -362,7 +362,7 @@ public class GameState {
             this.nextPiece = -1;
             return;
         }
-
+        
         // If the leftmost col of the current piece touches the wall
         if (slot == 0) {
             this.numBlocksTouchingWall += P_TOP[nextPiece][orient][0] - P_BOTTOM[nextPiece][orient][0];
