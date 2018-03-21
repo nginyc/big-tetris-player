@@ -15,7 +15,7 @@ public class Evaluator {
         for (int j = 0; j < NO_OF_TRIES; j ++) {
             State state = new State();
             GameState gameState = new GameState(State.ROWS - 1);
-            while(gameState.hasPlayerLost() == 0) {
+            while(!state.hasLost()) {
                 // Randomly get a piece
                 int nextPiece = state.getNextPiece();
                 gameState.setNextPiece(nextPiece);
@@ -34,7 +34,7 @@ public class Evaluator {
 
 	public static void main(String[] args) {
         double[][] candidates = new double[][] {
-            new double[] { -0.678938546389057, 0.34584029998128385, -0.6507745907665137, 0.04495673139587936, -0.05088896346124317, -0.15501715808211858, -0.21428899853936528, -0.43126487860023166, -0.0066156198116587295, 0.03082954578656715, 0.5635769883273619, 0.18689883335437713, 0.272470781155557, -0.46836530219858297, -0.4933848863909443 },
+            new double[] { -0.6480731776141786, 0.3807425271110561, -0.7754776101157559, 0.0565896368226417, -0.030153599357583383, -0.17087308203302012, -0.2126650511234261, -0.4309887734369272, -0.23948529345182237, -0.04274779318872454, 0.5999737840835486, 0.18079736188170248, 0.1881795167166116, -0.33744708988239214, -0.5225643642291802 },
         };
 
         Evaluator evaluator = new Evaluator();
