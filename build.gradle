@@ -38,6 +38,11 @@ task train(type:JavaExec) {
    classpath = sourceSets.main.runtimeClasspath
 }
 
+task trainSA(type:JavaExec) {
+   main = "PlayerTrainerSA"
+   classpath = sourceSets.main.runtimeClasspath
+}
+
 task evaluate(type:JavaExec) {
    main = "Evaluator"
    classpath = sourceSets.main.runtimeClasspath
