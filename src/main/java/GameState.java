@@ -140,7 +140,7 @@ public class GameState {
     }
 
     // State variables
-    private int rows; // No. of rows
+    public int rows; // No. of rows
     private HashSet<Integer> field; // Whether field at index is occupied
     private int nextPiece = -1; // As defined in `State`, -1 for not set
     private int orient = -1; // Orientation of the nextPiece, -1 for not set
