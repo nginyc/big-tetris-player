@@ -7,7 +7,7 @@ public class PlayerTrainerSA {
 
 	public static void main(String[] args) {
 		SimulatedAnnealingLearner learner = new SimulatedAnnealingLearner(
-			20, 15, 10, 10000, 0.003
+			20, 15, 10, 100000, 0.003
 		);
         //int rows, int weightsCount, int noOfTriesPerIndividual, int initialTemp, int coolingRate)
 
