@@ -22,13 +22,15 @@ public class GameStateUtilityLearner {
 	private int populationSize; 
 	private int weightsCount;
 	private double mutationProb;
+	private double mutationDecayRate;
 	private double selectedFraction;
 	private double tournamentSampleRatio;
 
 	public static int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
 	public GameStateUtilityLearner(int rows, int weightsCount, int noOfTriesPerIndividual, int noOfGenerations,
-		int populationSize, double mutationProb, double selectedFraction, double tournamentSampleRatio) {
+		int populationSize, double mutationProb, double selectedFraction, double tournamentSampleRatio,
+		double mutationDecayRate) {
 		this.rows = rows;
 		this.weightsCount = weightsCount;
 		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
@@ -37,6 +39,7 @@ public class GameStateUtilityLearner {
 		this.mutationProb = mutationProb;
 		this.tournamentSampleRatio = tournamentSampleRatio;
 		this.selectedFraction = selectedFraction;
+		this.mutationDecayRate = mutationDecayRate;
 
 		this.population = new double[this.populationSize][this.weightsCount];
 		this.individualsFitness = new double[this.populationSize];
@@ -70,8 +73,9 @@ public class GameStateUtilityLearner {
 		return fitness;
 	}
 
-	private double doGaussianMutation(double x, double min, double max) {
-		NormalDistribution dist = new NormalDistribution(x, (max - min) / 10);
+	// standard deviation = (max - min) * sdRatio
+	private double doGaussianMutation(double x, double min, double max, double sdRatio) {
+		NormalDistribution dist = new NormalDistribution(x, (max - min) * sdRatio);
 		return Math.min(Math.max(-1, dist.sample()), 1);
 	}
 
@@ -158,11 +162,13 @@ public class GameStateUtilityLearner {
 		}
 	}
 
-	private void doRandomMutation() {
+	private void doRandomMutation(int generatioNo) {
+		double sdRatio =  0.1 * Math.pow(this.mutationDecayRate, generatioNo);
 		for (int i = 0; i < this.populationSize; i ++) {
 			for (int j = 0; j < this.weightsCount; j ++) {
+				// With a probability, mutate normally a weight of an individual
 				if (Math.random() < this.mutationProb) {
-					this.population[i][j] = doGaussianMutation(this.population[i][j], 0, 1);
+					this.population[i][j] = doGaussianMutation(this.population[i][j], 0, 1, sdRatio);
 				}
 			}  
 		}
@@ -181,7 +187,7 @@ public class GameStateUtilityLearner {
 			this.evaluatePopulationFitness();
 			this.doTournamentSelection();
 			this.doWeightedAverageCrossover();
-			this.doRandomMutation();
+			this.doRandomMutation(g);
 			prettyPrintGeneration(g);
 		}
 

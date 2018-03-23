@@ -7,13 +7,13 @@ public class PlayerTrainer {
 
 	public static void main(String[] args) {
 		while (true) {
-			trainGaThenSa(16);	
+			trainGa(16);	
 		}	
 	}
 
 	private static void trainGa(int rows) {
 		GameStateUtilityLearner learner = new GameStateUtilityLearner(
-			rows, 15, 10, 100, 100, 0.1, 0.8, 0.5
+			rows, 15, 10, 100, 100, 0.1, 0.8, 0.5, 0.99
 		);
 		double[] weights = learner.train();
 		System.out.println("Weights found: " + Arrays.toString(weights));
@@ -25,7 +25,7 @@ public class PlayerTrainer {
 
 	private static void trainGaThenSa(int rows) {
 		GameStateUtilityLearner learner = new GameStateUtilityLearner(
-			rows, 15, 10, 100, 100, 0.1, 0.8, 0.5
+			rows, 15, 10, 100, 100, 0.1, 0.8, 0.5, 0.99
 		);
 		double[] weights = learner.train();
 		System.out.println("Weights found in GA: " + Arrays.toString(weights));
