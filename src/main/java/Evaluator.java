@@ -2,19 +2,20 @@ import java.util.Arrays;
 
 public class Evaluator {
 
-    public static int NO_OF_TRIES = 100;
+    public static int NO_OF_TRIES = 10;
+    public static int ROWS = State.ROWS - 1;
 
 	public Evaluator() {
     }
     
     public double evaluate(double[] weights) {
         GameStateUtilityFunction utilityFunction = new GameStateUtilityFunction(weights);
-        GameStateSearcher gameStateSearcher = new GameStateSearcher(utilityFunction);
+        GameStateSearcher gameStateSearcher = new GameStateSearcher(ROWS, utilityFunction);
 
         int rowsCleared = 0;
         for (int j = 0; j < NO_OF_TRIES; j ++) {
             State state = new State();
-            GameState gameState = new GameState(State.ROWS - 1);
+            GameState gameState = new GameState(ROWS);
             while(!state.hasLost()) {
                 // Randomly get a piece
                 int nextPiece = state.getNextPiece();
@@ -34,7 +35,7 @@ public class Evaluator {
 
 	public static void main(String[] args) {
         double[][] candidates = new double[][] {
-            new double[] { -0.641196655437541, 0.09316246852599018, -1.0, -0.10966787782405332, 0.3366283480319635, -0.9755105377101284, -0.030234993598680794, -0.6935400314361607, -0.7578671550807475, -0.11586238445360375, 0.27158497232646495, 0.45848002866814774, 0.13763390483047486, -0.0011017814204401586, -0.624064623760171 },
+            new double[] { -0.10535323935941053, 0.0012378990514839156, -0.11976135881490828, 0.0009199426483574079, -0.08823390729195249, -1, -0.0034571639142464347, -0.07006317338464395, -0.0389316396907097, -0.006601781575429543, 0.08778061719042551, 0.07347776609114921, 0.006118235517837187, -0.0027428340856810664, -0.0042475024771130515 },
         };
 
         Evaluator evaluator = new Evaluator();

@@ -3,11 +3,12 @@ public class PlayerSkeleton {
 	private GameStateSearcher gameStateSearcher;
 	private GameState gameState;
 	private GameStateUtilityFunction utilityFunction;
+	private static int ROWS = State.ROWS - 1;
 
 	public PlayerSkeleton(double[] weights) {
 		this.gameState = new GameState(State.ROWS - 1);
 		this.utilityFunction = new GameStateUtilityFunction(weights);
-		this.gameStateSearcher = new GameStateSearcher(utilityFunction);
+		this.gameStateSearcher = new GameStateSearcher(ROWS, utilityFunction);
 	}
 
 	//implement this function to have a working system

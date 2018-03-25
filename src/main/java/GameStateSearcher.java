@@ -1,9 +1,11 @@
 // Given a game state and a utility function, returns best move
 public class GameStateSearcher {
   private IGameStateUtilityFunction utilityFunction;
+  private GameState searchGameState;
 
-	public GameStateSearcher(IGameStateUtilityFunction utilityFunction) {
+	public GameStateSearcher(int rows, IGameStateUtilityFunction utilityFunction) {
     this.utilityFunction = utilityFunction;
+    this.searchGameState = new GameState(rows);
   }
 
   public int[] search(GameState gameState) {
@@ -17,9 +19,9 @@ public class GameStateSearcher {
       // Calculate move util
       int orient = legalMove[GameState.ORIENT];
       int slot = legalMove[GameState.SLOT];
-      GameState nextGameState = gameState.clone();
-      nextGameState.makePlayerMove(orient, slot);
-      double moveUtil = utilityFunction.get(nextGameState);
+      this.searchGameState.restore(gameState);
+      this.searchGameState.makePlayerMove(orient, slot);
+      double moveUtil = utilityFunction.get(this.searchGameState);
       if (bestMove == null || moveUtil >= bestMoveUtil) {
         bestMove = legalMove;
         bestMoveUtil = moveUtil;

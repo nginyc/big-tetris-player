@@ -22,7 +22,8 @@ public class GameStateUtilityFunction implements IGameStateUtilityFunction {
         int col = GameState.COLS;
         int row = gameState.rows;
         // Note: Many of the max values of the heuristics are probably overestimates, because they are the 
-        // worst/best cases which are basically almost impossible to attain.
+		// worst/best cases which are basically almost impossible to attain.
+		
         
 		return (
 			this.weights[0] * (this.normalize(gameState.getColumnAggregateHeight(), 0, col * row)) +                    // 0 to col * row

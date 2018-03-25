@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.function.Function;
 
 public class PlayerTrainer {
 
@@ -6,14 +7,42 @@ public class PlayerTrainer {
 	}
 
 	public static void main(String[] args) {
+		// TODO: Analyse effectiveness of crossover
+		// TODO: Analyse change in weights down generations
+		// TODO: Try PSO
+		// TODO: Try hybrid GA
 		while (true) {
-			trainGa(16);	
+			trainGa((weights) -> {
+				double rowsCleared = getAverageRowsCleared(20, 10, weights);
+				return rowsCleared;
+			}, 100, 50);	
 		}	
 	}
 
-	private static void trainGa(int rows) {
-		GameStateUtilityLearner learner = new GameStateUtilityLearner(
-			rows, 15, 10, 100, 100, 0.1, 0.8, 0.5, 0.99
+	public static double getAverageRowsCleared(int gameRows, int noOfTriesPerIndividual, double[] weights) {
+		GameStateUtilityFunction utilityFunction = new GameStateUtilityFunction(weights);
+		GameStateSearcher gameStateSearcher = new GameStateSearcher(gameRows, utilityFunction);
+
+		int rowsCleared = 0;
+		for (int i = 0; i < noOfTriesPerIndividual; i ++) {
+			GameState gameState = new GameState(gameRows);
+			while(gameState.hasPlayerLost() == 0) {
+				// Randomly get a piece
+				int nextPiece = gameState.getRandomNextPiece();
+				gameState.setNextPiece(nextPiece);
+				int[] move = gameStateSearcher.search(gameState);
+				gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT]);
+			}
+			rowsCleared += gameState.getRowsCleared(); 
+		}
+
+		double fitness = (double)rowsCleared / noOfTriesPerIndividual;
+		return fitness;
+	}
+
+	private static void trainGa(Function<double[], Double> fitnessFunction, int noOfGenerations, int populationSize) {
+		GeneticAlgorithmLearner learner = new GeneticAlgorithmLearner(
+			fitnessFunction, 15, noOfGenerations, populationSize, 0.1, 0.8, 0.5, 0.998
 		);
 		double[] weights = learner.train();
 		System.out.println("Weights found: " + Arrays.toString(weights));
@@ -23,9 +52,9 @@ public class PlayerTrainer {
 		System.out.println("Rows cleared: " + rowsCleared);
 	}
 
-	private static void trainGaThenSa(int rows) {
-		GameStateUtilityLearner learner = new GameStateUtilityLearner(
-			rows, 15, 10, 100, 100, 0.1, 0.8, 0.5, 0.99
+	private static void trainGaThenSa(int rows, Function<double[], Double> fitnessFunction) {
+		GeneticAlgorithmLearner learner = new GeneticAlgorithmLearner(
+			fitnessFunction, 15, 100, 100, 0.1, 0.8, 0.5, 0.999
 		);
 		double[] weights = learner.train();
 		System.out.println("Weights found in GA: " + Arrays.toString(weights));

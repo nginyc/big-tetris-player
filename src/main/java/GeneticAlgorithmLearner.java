@@ -3,10 +3,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-public class GameStateUtilityLearner {
+public class GeneticAlgorithmLearner {
 
 	private double[][] population;
 	private final double[] individualsFitness;
@@ -16,8 +17,6 @@ public class GameStateUtilityLearner {
 	private ExecutorService executor;
 
 	// Learning hyperparameters
-	private int rows;
-	private int noOfTriesPerIndividual;
 	private int noOfGenerations;
 	private int populationSize; 
 	private int weightsCount;
@@ -25,18 +24,19 @@ public class GameStateUtilityLearner {
 	private double mutationDecayRate;
 	private double selectedFraction;
 	private double tournamentSampleRatio;
+	private Function<double[], Double> fitnessFunction;
 
 	public static int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
-	public GameStateUtilityLearner(int rows, int weightsCount, int noOfTriesPerIndividual, int noOfGenerations,
-		int populationSize, double mutationProb, double selectedFraction, double tournamentSampleRatio,
+	public GeneticAlgorithmLearner(Function<double[], Double> fitnessFunction,
+		int weightsCount, int noOfGenerations, int populationSize, double mutationProb, 
+		double selectedFraction, double tournamentSampleRatio,
 		double mutationDecayRate) {
-		this.rows = rows;
-		this.weightsCount = weightsCount;
-		this.noOfTriesPerIndividual = noOfTriesPerIndividual;
+		this.fitnessFunction = fitnessFunction;
 		this.noOfGenerations = noOfGenerations;
 		this.populationSize = populationSize;
 		this.mutationProb = mutationProb;
+		this.weightsCount = weightsCount;
 		this.tournamentSampleRatio = tournamentSampleRatio;
 		this.selectedFraction = selectedFraction;
 		this.mutationDecayRate = mutationDecayRate;
@@ -46,31 +46,6 @@ public class GameStateUtilityLearner {
 		this.individualsSelected = new HashSet<>(this.populationSize);
 		this.individualsSelectedList = new ArrayList<>(this.populationSize);
 		this.individualsTaskFutures = new Object[this.populationSize];
-	}
-
-	private double getFitness(double[] weights) {
-		if (weights.length != this.weightsCount) {
-			throw new IllegalStateException();
-		}
-
-		GameStateUtilityFunction utilityFunction = new GameStateUtilityFunction(weights);
-		GameStateSearcher gameStateSearcher = new GameStateSearcher(utilityFunction);
-
-		int rowsCleared = 0;
-		for (int i = 0; i < this.noOfTriesPerIndividual; i ++) {
-			GameState gameState = new GameState(this.rows);
-			while(gameState.hasPlayerLost() == 0) {
-				// Randomly get a piece
-				int nextPiece = gameState.getRandomNextPiece();
-				gameState.setNextPiece(nextPiece);
-				int[] move = gameStateSearcher.search(gameState);
-				gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT]);
-			}
-			rowsCleared += gameState.getRowsCleared(); 
-		}
-
-		double fitness = (double)rowsCleared / this.noOfTriesPerIndividual;
-		return fitness;
 	}
 
 	// standard deviation = (max - min) * sdRatio
@@ -125,7 +100,7 @@ public class GameStateUtilityLearner {
 		for (int i = 0; i < this.populationSize; i ++) {
 			final double[] individual = this.population[i];
 			this.individualsTaskFutures[i] = this.executor.submit(() -> {
-				return this.getFitness(individual);
+				return this.fitnessFunction.apply(individual);
 			});
 		}
 

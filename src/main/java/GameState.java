@@ -141,7 +141,7 @@ public class GameState {
 
     // State variables
     public int rows; // No. of rows
-    private HashSet<Integer> field; // Whether field at index is occupied
+    private int[][] field; // Whether field at index is occupied
     private int nextPiece = -1; // As defined in `State`, -1 for not set
     private int orient = -1; // Orientation of the nextPiece, -1 for not set
     private int lost = 0; // 1 if lost, 0 otherwise  
@@ -167,11 +167,11 @@ public class GameState {
         this.bottom = new int[COLS];
         this.colTransitions = new int[COLS];
         this.rowTransitions = new int[this.rows];
-        this.field = new HashSet<>();
+        this.field = new int[this.rows][COLS];
     }
 
-    private GameState(int rows, HashSet<Integer> field, int nextPiece, int lost, int turn, int rowsCleared, int[] top,
-        int[] bottom, int columnAggregateHeight, int columnAggregateBottomStackHeight, int rowsClearedInPrevMove, 
+    private GameState(int rows, int[][] field, int nextPiece, int lost, int turn, int rowsCleared, 
+        int[] top, int[] bottom, int columnAggregateHeight, int columnAggregateBottomStackHeight, int rowsClearedInPrevMove, 
         int numBlocksInField, int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions, 
         int[] colTransitions) {
         this.rows = rows;
@@ -194,11 +194,28 @@ public class GameState {
     }
 
     public GameState clone() {
-        HashSet<Integer> fieldClone = new HashSet<>(this.field);
-        int[] topClone = Arrays.stream(this.top).toArray();
-        int[] bottomClone = Arrays.stream(this.bottom).toArray();
-        int[] rowTransitionsClone = Arrays.stream(this.rowTransitions).toArray();
-        int[] colTransitionsClone = Arrays.stream(this.colTransitions).toArray();
+        int[][] fieldClone = new int[this.rows][COLS];
+        int[] topClone = new int[COLS];
+        int[] bottomClone = new int[COLS];
+        int[] rowTransitionsClone = new int[this.rows];
+        int[] colTransitionsClone = new int[COLS];
+
+        for (int c = 0; c < COLS; c ++) {
+            topClone[c] = this.top[c];
+            bottomClone[c] = this.bottom[c];
+            colTransitionsClone[c] = this.colTransitions[c];
+        }
+
+        for (int r = 0; r < this.rows; r ++) {
+            rowTransitionsClone[r] = this.rowTransitions[r];
+        }
+
+        for (int r = 0; r < this.rows; r ++) {
+            for (int c = 0; c < COLS; c ++) {
+                fieldClone[r][c] = this.field[r][c];
+            }
+        }
+
         return new GameState(
             this.rows, fieldClone, this.nextPiece, this.lost, 
             this.turn, this.rowsCleared, topClone, bottomClone,
@@ -206,6 +223,45 @@ public class GameState {
             this.numBlocksInField, this.maxTop, this.landingHeightInPrevMove,
             this.numBlocksTouchingWall, rowTransitionsClone, colTransitionsClone
         );
+    }
+
+    /**
+     * Restore from given game state (must be the same no. of rows)
+     */
+    public void restore(GameState gameState) {
+        if (this.rows != gameState.rows) {
+            throw new IllegalArgumentException("Game state to restore should be the same no. of rows!");
+        }
+
+        for (int c = 0; c < COLS; c ++) {
+            this.top[c] = gameState.top[c];
+            this.bottom[c] = gameState.bottom[c];
+            this.colTransitions[c] = gameState.colTransitions[c];
+        }
+
+        for (int r = 0; r < this.rows; r ++) {
+            this.rowTransitions[r] = gameState.rowTransitions[r];
+        }
+
+        for (int r = 0; r < this.rows; r ++) {
+            for (int c = 0; c < COLS; c ++) {
+                this.field[r][c] = gameState.field[r][c];
+            }
+        }
+
+       this.rows = gameState.rows;
+       this.nextPiece = gameState.nextPiece;
+       this.turn = gameState.turn;
+       this.lost = gameState.lost;
+       this.turn = gameState.turn;
+       this.rowsCleared = gameState.rowsCleared;
+       this.columnAggregateHeight = gameState.columnAggregateHeight;
+       this.columnAggregateBottomStackHeight = gameState.columnAggregateBottomStackHeight;
+       this.rowsClearedInPrevMove = gameState.rowsClearedInPrevMove;
+       this.numBlocksInField = gameState.numBlocksInField;
+       this.maxTop = gameState.maxTop;
+       this.landingHeightInPrevMove = gameState.landingHeightInPrevMove;
+       this.numBlocksTouchingWall = gameState.numBlocksTouchingWall;
     }
 
     ///////////////////////// Heuristics ////////////////////////////
@@ -325,9 +381,11 @@ public class GameState {
     }
 
     public int getField(int row, int col) {
-        int fieldIndex = getFieldIndex(row, col);
-        Integer cell = field.contains(fieldIndex) ? 1 : 0;
-        return (cell == null) ? 0 : cell;
+        if (row < 0 || row >= this.rows || col < 0 || col >= COLS) {
+            return 0;
+        }
+
+        return this.field[row][col];
     }
 
 
@@ -558,26 +616,11 @@ public class GameState {
         );
     }
 
-    private String getPrettyPrintFieldString(HashSet<Integer> field) {
-        int[][] fieldArray = new int[this.rows][COLS];
-        for (int r = this.rows - 1; r >= 0; r --) {
-            for (int c = 0; c < COLS; c ++) {
-                fieldArray[r][c] = field.contains(this.getFieldIndex(this.rows - 1 - r, c)) ? 1 : 0;
-            }
-        }
-        return String.join("\n", Arrays.stream(fieldArray).map(x -> Arrays.toString(x)).toArray(String[]::new));
+    private String getPrettyPrintFieldString(int[][] field) {
+        return String.join("\n", Arrays.stream(this.field).map(x -> Arrays.toString(x)).toArray(String[]::new));
     }
 
     private void setField(int row, int col, int value) {
-        int fieldIndex = this.getFieldIndex(row, col);
-        if (value == 0) {
-            this.field.remove(fieldIndex);
-        } else {
-            this.field.add(fieldIndex);
-        }
-    }
-    
-    private int getFieldIndex(int row, int col) {
-        return row * COLS + col;
+        this.field[row][col] = value;
     }
 }

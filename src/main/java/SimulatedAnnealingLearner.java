@@ -14,7 +14,8 @@ public class SimulatedAnnealingLearner {
     private double initialTemp;
     private double coolingRate;
 
-    public SimulatedAnnealingLearner(int rows, int weightsCount, int noOfTriesPerIndividual, double initialTemp, double coolingRate) {
+    public SimulatedAnnealingLearner(int rows, int weightsCount, int noOfTriesPerIndividual, 
+        double initialTemp, double coolingRate) {
         this.rows = rows;
         this.weightsCount = weightsCount;
         this.noOfTriesPerIndividual = noOfTriesPerIndividual;
@@ -28,7 +29,7 @@ public class SimulatedAnnealingLearner {
             throw new IllegalStateException();
         }
         GameStateUtilityFunction utilityFunction = new GameStateUtilityFunction(weights);
-        GameStateSearcher gameStateSearcher = new GameStateSearcher(utilityFunction);
+        GameStateSearcher gameStateSearcher = new GameStateSearcher(this.rows, utilityFunction);
 
         int rowsCleared = 0;
         for (int i = 0; i < this.noOfTriesPerIndividual; i++) {
