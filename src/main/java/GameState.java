@@ -345,9 +345,9 @@ public class GameState {
         return (this.columnAggregateHeight / COLS);
     }
 
-    public int getMeanHeightDifference() {
+    public double getMeanHeightDifference() {
         // Average of the difference between the height of each col and the mean height of the state
-        int meanHeightDifference = 0;
+        double meanHeightDifference = 0;
         double average = this.getAverageHeightOfCols();
         for (int c = 0; c < COLS; c++) {
             meanHeightDifference += Math.abs(average - this.top[c]);

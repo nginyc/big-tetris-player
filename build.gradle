@@ -47,3 +47,8 @@ task evaluate(type:JavaExec) {
    main = "Evaluator"
    classpath = sourceSets.main.runtimeClasspath
 }
+
+task evaluateLearner(type:JavaExec) {
+   main = "LearnerEvaluator"
+   classpath = sourceSets.main.runtimeClasspath
+}
