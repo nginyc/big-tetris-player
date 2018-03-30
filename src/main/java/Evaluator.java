@@ -39,7 +39,7 @@ public class Evaluator {
             try {
                 Future<Integer> future = (Future<Integer>)futures[j];
                 int rowsCleared = future.get();
-                System.out.println("Rows cleared: " + rowsCleared);
+                // System.out.println("Rows cleared: " + rowsCleared);
                 totalRowsCleared += rowsCleared;
 			} catch (ExecutionException error) {
 				throw new Error("Execution exception reached: " + error.getMessage());
