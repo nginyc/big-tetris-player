@@ -1,15 +1,29 @@
 # Big Tetris Agent
 
-## Running the Player
+## Scripts
+
+### Running the Player (Runs `PlayerSkeleton.java`)
 
 ```sh
 ./gradlew run
 ```
 
-## Training the Player
+### Training the Player (Runs `PlayerTrainer.java`)
 
 ```sh
 ./gradlew train
+```
+
+### Evaluating Utility Functions (Runs `Evaluator.java`)
+
+```sh
+./gradlew evaluate
+```
+
+### Evaluating Learners of Utility Functions (Runs `LearnerEvaluator.java`)
+
+```sh
+./gradlew evaluateLearner
 ```
 
 ## Results
