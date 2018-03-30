@@ -90,7 +90,7 @@ Conditions: Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz, 2801 Mhz, 4 Core(s), 8 Lo
 
 We made certain optimisations in our code in an attempt to increase the possibility of finding the optimal Tetris utility function.
 
-### Feature-Subset-Selection
+#### Feature-Subset-Selection
 
 What we did: From 15 features, we narrowed down to 6 (will be adding more) important features using greedy forward selection of features. To heavily cut the computation time required for the evaluation of whether a set of features is more important than another, we used the number of rows cleared for a 10-row Tetris game as a proxy to that for a 20-row Tetris game. We first evaluated which single feature can produce a utility function that can clear the most rows over 10 tries of a 10-row Tetris game, then we successively added more features to the utility function greedily based on their improvement on the number of rows cleared, stopping when no new feature improved the utility function's performance (WIP).
 
@@ -105,7 +105,7 @@ Features that we included, in descending order of importance:
 5) No. of edges touching wall
 6) Mean height difference
 
-### Genetic-Hill-Climbing
+#### Genetic-Hill-Climbing
 
 What we did: In our genetic algorithm, we applied hill-climbing on the best-performing individual at the end of every generation (with reference to https://www.hindawi.com/journals/jam/2013/103591/).
 
