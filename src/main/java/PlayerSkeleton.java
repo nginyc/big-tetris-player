@@ -1,33 +1,34 @@
+import java.util.Arrays;
 
 public class PlayerSkeleton {
 
 	private GameStateSearcher gameStateSearcher;
+	private GameState gameState;
 	private GameStateUtilityFunction utilityFunction;
 
 	public PlayerSkeleton(double[] weights) {
+		this.gameState = new GameState();
 		this.utilityFunction = new GameStateUtilityFunction(weights);
 		this.gameStateSearcher = new GameStateSearcher(utilityFunction);
 	}
 
 	//implement this function to have a working system
 	public int[] pickMove(State s) {
-		GameState gameState = new GameState(
-			this.getBoardField(s), s.getNextPiece(), 
-			s.lost ? 1 : 0, s.getTurnNumber(), s.getRowsCleared()
-		);
-		int[] move = this.gameStateSearcher.getBestMove(gameState);
-		return move;
+		this.gameState.setNextPiece(s.getNextPiece());
+		// System.out.println("At game state:");
+		// System.out.println(this.gameState + "\n");
+		GameStateSearcher.BestMoveResult result = this.gameStateSearcher.searchNLevelsDFS(this.gameState, 1);
+		// Actually make the best move
+		this.gameState.makePlayerMove(result.move[0], result.move[1]);
+		// System.out.println(String.format("Best move %s resulted in util %f.", Arrays.toString(result.move), result.moveUtil));
+		return result.move;
 	}
 
 	public static void main(String[] args) {
 		State s = new State();
-		new TFrame(s);
+		// new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			-0.3833217021335531, -0.2991216095851814, -0.9033648455277214, -0.06417739912016285, -0.07057842371336309, -0.09208476184731196, -0.018568446747041722, -0.30384126603893424, -0.2, -0.2, -0.4, -0.1, 0.01, 0.01, -1, 0.01
-			// 100d/1000, -0.5d/1000, -100d/1000, -10d/1000, -10d/1000, -10d/1000, -1d/1000, -1000d/1000
-			// 100d, -0.5d, -100d, -10d, -10d, -10d, -1d, -1000d,
-			// 0.37073482618670894, -0.5052451673530609, -0.9856621036908355, -0.592334190301409, -0.11416158721924785, -0.27826905231459276, 0.04908111855531905, -1
-			// 0.37073482618670894, -0.5052451673530609, -0.9856621036908355, -0.592334190301409, -0.11416158721924785, -0.27826905231459276, 0.04908111855531905, -0.06935114340499116
+			-0.7600470062605138, -0.4521173978191585, -0.5744522175063087, -0.021265771358714873, 0.4340105392756133, -0.21542144905191385, -0.30213028362155675, -0.6454385901789101, -0.8601498956441487, -0.42247759897665393, 0.7705063090959259, -0.1347681386561799, 0.4169110305839228, 0.015883560257191016, -0.01313231451581028
 		});
 
 		while(!s.hasLost()) {
@@ -36,28 +37,15 @@ public class PlayerSkeleton {
 				// System.out.println("No move will result in a next state.");
 				break;
 			}
-			s.makeMove(move[0], move[1]);
-			s.draw();
-			s.drawNext(0,0);
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			s.makeMove(move[State.ORIENT], move[State.SLOT]);
+			// s.draw();
+			// s.drawNext(0,0);
+			// try {
+			// 	Thread.sleep(1000);
+			// } catch (InterruptedException e) {
+			// 	e.printStackTrace();
+			// }
 		}
 		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 	}
-	
-	// Make board field compatible
-	private int[][] getBoardField(State s) {
-		int[][] field = s.getField();
-		int[][] fieldNew = new int[GameState.ROWS][GameState.COLS];
-		for (int r = 0; r < GameState.ROWS; r ++) {
-			for (int c = 0; c < GameState.COLS; c ++) {
-				fieldNew[r][c] = field[r][c];
-			}
-		}
-
-		return fieldNew;
-	} 
 }
