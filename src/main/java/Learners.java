@@ -3,7 +3,7 @@ import java.util.Arrays;
 public class Learners {
     public static Evaluator evaluator = new Evaluator();
 
-    private static IGameStateUtilityFunction toUtilityFunction(double[] weights, int[] weightIndices) {
+    public static IGameStateUtilityFunction toUtilityFunction(double[] weights, int[] weightIndices) {
         double[] evalWeights = new double[15];
         Arrays.fill(evalWeights, 0);
         for (int i = 0; i < weightIndices.length; i ++) {

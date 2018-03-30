@@ -39,6 +39,7 @@ public class Evaluator {
             try {
                 Future<Integer> future = (Future<Integer>)futures[j];
                 int rowsCleared = future.get();
+                System.out.println("Rows cleared: " + rowsCleared);
                 totalRowsCleared += rowsCleared;
 			} catch (ExecutionException error) {
 				throw new Error("Execution exception reached: " + error.getMessage());
@@ -65,16 +66,19 @@ public class Evaluator {
     }
 
 	public static void main(String[] args) {
-        double[][] candidates = new double[][] {
-            new double[] { -0.7827327260183714, -0.11334336727622543, -0.04677414857202162, 0.053388888547202154, -0.46329670624437014, -0.05007488959693253, -0.08437679573888653, -0.7023611620823788, -0.45828420372251777, 0.026138258237249294, 0.05012811601766011, 0.2928197003358416, 0.09266091906516735, 0.1976357986587708, -0.04490329796781195 },
-            new double[] { -0.10535323935941053, 0.0012378990514839156, -0.11976135881490828, 0.0009199426483574079, -0.08823390729195249, -1, -0.0034571639142464347, -0.07006317338464395, -0.0389316396907097, -0.006601781575429543, 0.08778061719042551, 0.07347776609114921, 0.006118235517837187, -0.0027428340856810664, -0.0042475024771130515 },
+        IGameStateUtilityFunction[] utilityFunctions = new IGameStateUtilityFunction[] {
+            Learners.toUtilityFunction(
+                new double[] { -0.5492628540570825, -1.0, -0.9999921480184876, 0.4833128587233925, 0.00987285705521266, -0.7972235992021071 }, 
+                new int[] { 0, 4, 5, 10, 12, 11 }
+            )
         };
 
         Evaluator evaluator = new Evaluator();
 
-        for (int i = 0; i < candidates.length; i ++) {
-            System.out.println("Testing candidate " + i + " " + Arrays.toString(candidates[i]) + "...");
-            double averageRowsCleared = evaluator.evaluate(candidates[i]);
+        for (int i = 0; i < utilityFunctions.length; i ++) {
+            IGameStateUtilityFunction utilityFunction = utilityFunctions[i];
+            System.out.println("Testing utility function " + i + " " + utilityFunction.toString() + "...");
+            double averageRowsCleared = evaluator.evaluate(utilityFunction);
             System.out.println("Candidate " + i + " clears average of " + averageRowsCleared + " rows over " + NO_OF_TRIES + " tries");
 		}
 	}
