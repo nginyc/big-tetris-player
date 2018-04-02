@@ -39,7 +39,7 @@ public class Evaluator {
             try {
                 Future<Integer> future = (Future<Integer>)futures[j];
                 int rowsCleared = future.get();
-                // System.out.println("Rows cleared: " + rowsCleared);
+                System.out.println("Rows cleared: " + rowsCleared);
                 totalRowsCleared += rowsCleared;
 			} catch (ExecutionException error) {
 				throw new Error("Execution exception reached: " + error.getMessage());
@@ -68,8 +68,8 @@ public class Evaluator {
 	public static void main(String[] args) {
         IGameStateUtilityFunction[] utilityFunctions = new IGameStateUtilityFunction[] {
             Learners.toUtilityFunction(
-                new double[] { -0.5492628540570825, -1.0, -0.9999921480184876, 0.4833128587233925, 0.00987285705521266, -0.7972235992021071 }, 
-                new int[] { 0, 4, 5, 10, 12, 11 }
+                new double[] { -0.18058087213646176, -1.0, -0.9859493187639575, 0.15454976336975096, 0.009062094933315022, -0.4302022682880107, -0.2921079786301265, 0.008874001359701303 }, 
+                new int[] { 0, 4, 5, 10, 12, 11, 2, 7 }
             )
         };
 

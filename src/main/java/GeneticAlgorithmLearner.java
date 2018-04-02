@@ -252,7 +252,7 @@ public class GeneticAlgorithmLearner {
 			this.updateBestIndividual();
 			generation ++;
 			this.prettyPrintBestIndividual(generation);
-			this.prettyPrintPopulation(generation);
+			// this.prettyPrintPopulation(generation);
 		}
 
 		return this.bestIndividual;

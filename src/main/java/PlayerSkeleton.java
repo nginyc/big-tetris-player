@@ -2,12 +2,15 @@ public class PlayerSkeleton {
 
 	private GameStateSearcher gameStateSearcher;
 	private GameState gameState;
-	private GameStateUtilityFunction utilityFunction;
+	private IGameStateUtilityFunction utilityFunction;
 	private static int ROWS = State.ROWS - 1;
 
-	public PlayerSkeleton(double[] weights) {
+	public PlayerSkeleton() {
 		this.gameState = new GameState(State.ROWS - 1);
-		this.utilityFunction = new GameStateUtilityFunction(weights);
+		this.utilityFunction = Learners.toUtilityFunction(
+			new double[] { -0.18058087213646176, -1.0, -0.9859493187639575, 0.15454976336975096, 0.009062094933315022, -0.4302022682880107, -0.2921079786301265, 0.008874001359701303 }, 
+			new int[] { 0, 4, 5, 10, 12, 11, 2, 7 }
+		);
 		this.gameStateSearcher = new GameStateSearcher(ROWS, utilityFunction);
 	}
 
@@ -25,21 +28,15 @@ public class PlayerSkeleton {
 	public static void main(String[] args) {
 		State s = new State();
 		// new TFrame(s);
-		PlayerSkeleton p = new PlayerSkeleton(new double[] {
-			-0.7600470062605138, -0.4521173978191585, -0.5744522175063087, -0.021265771358714873, 0.4340105392756133, -0.21542144905191385, -0.30213028362155675, -0.6454385901789101, -0.8601498956441487, -0.42247759897665393, 0.7705063090959259, -0.1347681386561799, 0.4169110305839228, 0.015883560257191016, -0.01313231451581028
-		});
+		PlayerSkeleton p = new PlayerSkeleton();
 
 		while(!s.hasLost()) {
 			int[] move = p.pickMove(s);
-			if (move == null) {
-				// System.out.println("No move will result in a next state.");
-				break;
-			}
 			s.makeMove(move[State.ORIENT], move[State.SLOT]);
 			// s.draw();
 			// s.drawNext(0,0);
 			// try {
-			// 	Thread.sleep(1000);
+			// 	Thread.sleep(10);
 			// } catch (InterruptedException e) {
 			// 	e.printStackTrace();
 			// }

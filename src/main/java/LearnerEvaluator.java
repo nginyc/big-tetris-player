@@ -3,7 +3,7 @@ public class LearnerEvaluator {
 
     public static int ROWS = 10;
     public static int NO_OF_TRIES = 100;
-    public static int MAX_LEARNING_MS = 1000 * 60 * 30; // 30 min
+    public static int MAX_LEARNING_MS = 1000 * 60 * 60; // 60 min
 
     public interface Learner {
         IGameStateUtilityFunction train(int rows);
@@ -33,15 +33,7 @@ public class LearnerEvaluator {
 
 	public static void main(String[] args) {
         Learner[] testLearners = new Learner[] {
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 1, }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 2 }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 3 }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 6 }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 7 }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 8 }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 9 }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 13 }),
-            new Learners.LearnerNWeights(new int[] { 0, 4, 5, 10, 12, 11, 14 }),
+            new Learners.LearnerNWeightsHillClimb(new int[] { 0, 4, 5, 10, 12, 11, 2, 7 }),
         };
 
         LearnerEvaluator learnerEvaluator = new LearnerEvaluator();

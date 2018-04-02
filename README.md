@@ -67,6 +67,25 @@ In one of the runs, found the following best weights at generation 30:
 
 It is evaluated to clear 5459051.95 rows over 100 tries, with a peak of 25113599 rows in a game.
 
+#### Genetic Algorithm with Hill-Climbing (8 features)
+
+Configurations:
+
+- 8 features used (in order), normalized: column aggregate height, bumpiness, wells, blocks in field, edges touching the wall, mean height difference
+- Tournament selection with tournament size of 2, selection fraction of 0.8
+- Weighted crossover
+- Gaussian mutation with probability of 0.1 to mutate a single weight for only children in a generation
+- 10-attempt hill-climbing on the best individual in a generation
+- Fitness function is the average rows cleared over 10 20-row games
+
+Performance:
+
+In one of the runs, found the following best weights at generation 102:
+
+[-0.18058087213646176, -1.0, -0.9859493187639575, 0.15454976336975096, 0.009062094933315022, -0.4302022682880107, -0.2921079786301265, 0.008874001359701303]
+
+It is evaluated to clear 9318571.49 rows over 100 tries, with a peak of 48228450 rows in a game.
+
 ### Speed Optimisations
 
 We made certain optimisations in our code to speed up the search for, and evaluation of, a set of weights for the Tetris utility function to find the best one. So we don't need to wait forever to get our results.
@@ -125,7 +144,7 @@ We made certain optimisations in our code in an attempt to increase the possibil
 
 #### Feature-Subset-Selection
 
-What we did: From 15 features, we narrowed down to 6 (will be adding more) important features using greedy forward selection of features. To heavily cut the computation time required for the evaluation of whether a set of features is more important than another, we used the number of rows cleared for a 10-row Tetris game as a proxy to that for a 20-row Tetris game. We first evaluated which single feature can produce a utility function that can clear the most rows over 10 tries of a 10-row Tetris game, then we successively added more features to the utility function greedily based on their improvement on the number of rows cleared, stopping when no new feature improved the utility function's performance (WIP).
+What we did: From 15 features, we narrowed down to 8 important features using greedy forward selection of features. To heavily cut the computation time required for the evaluation of whether a set of features is more important than another, we used the number of rows cleared for a 10-row Tetris game as a proxy to that for a 20-row Tetris game. We first evaluated which single feature can produce a utility function that can clear the most rows over 10 tries of a 10-row Tetris game, then we successively added more features to the utility function greedily based on their improvement on the number of rows cleared.
 
 Motivation: We started with 15 features identified from our research, but the resultant search space was too huge, leading to repeated runs of the genetic algorithm without any good output sets of weights.
 
@@ -137,6 +156,8 @@ Features that we included, in descending order of importance:
 4) No. of blocks in field
 5) No. of edges touching wall
 6) Mean height difference
+7) No. of holes
+8) No. of column transitions
 
 #### Genetic-Hill-Climbing
 
