@@ -67,6 +67,12 @@ In one of the runs, found the following best weights at generation 30:
 
 It is evaluated to clear 5459051.95 rows over 100 tries, with a peak of 25113599 rows in a game.
 
+In one of the runs, found the following best weights at generation 30:
+
+[-0.3907454916830745, -0.811413075782089, -1.0, 0.3531714849383103, 0.0059182152605956875, -0.5170695909853636]
+
+It is evaluated with fitness of 2.99952181E7
+
 #### Genetic Algorithm with Hill-Climbing (8 features)
 
 Configurations:
