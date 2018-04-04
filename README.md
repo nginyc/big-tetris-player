@@ -71,13 +71,13 @@ In one of the runs, found the following best weights at generation 30:
 
 [-0.3907454916830745, -0.811413075782089, -1.0, 0.3531714849383103, 0.0059182152605956875, -0.5170695909853636]
 
-It is evaluated with fitness of 2.99952181E7
+It is evaluated to clear 15634965.25 rows over 100 tries, with a peak of 119448005 in a game.
 
 #### Genetic Algorithm with Hill-Climbing (8 features)
 
 Configurations:
 
-- 8 features used (in order), normalized: column aggregate height, bumpiness, wells, blocks in field, edges touching the wall, mean height difference
+- 8 features used (in order), normalized: column aggregate height, bumpiness, wells, blocks in field, edges touching the wall, mean height difference, holes, column transitions
 - Tournament selection with tournament size of 2, selection fraction of 0.8
 - Weighted crossover
 - Gaussian mutation with probability of 0.1 to mutate a single weight for only children in a generation
