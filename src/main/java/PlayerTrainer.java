@@ -6,7 +6,14 @@ public class PlayerTrainer {
 		// TODO: Try other selection & mutation methods 
 		// TODO: Try PSO
 		while (true) {
-			LearnerEvaluator.Learner learner = new Learners.LearnerNWeightsHillClimb(new int[] { 0, 4, 5, 10, 12, 11, 2, 7 });
+			LearnerEvaluator.Learner learner = new Learners.LearnerNWeightsSeeded(
+				new int[] { 0, 4, 5, 10, 12, 11, 2, 7 },
+				new double[][] {
+					new double[] { -0.3907454916830745, -0.811413075782089, -1.0, 0.3531714849383103, 0.0059182152605956875, -0.5170695909853636, 0, 0 },
+					new double[] { -0.5492628540570825, -1.0, -0.9999921480184876, 0.4833128587233925, 0.00987285705521266, -0.7972235992021071, 0, 0 },
+					new double[] { -0.18058087213646176, -1.0, -0.9859493187639575, 0.15454976336975096, 0.009062094933315022, -0.4302022682880107, -0.2921079786301265, 0.008874001359701303 }				
+				}
+			);
 			IGameStateUtilityFunction utilityFunction = learner.train(20);
 			Evaluator evaluator = new Evaluator();
 			double rowsCleared = evaluator.evaluate(utilityFunction);

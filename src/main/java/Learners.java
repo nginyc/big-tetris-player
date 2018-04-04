@@ -87,4 +87,31 @@ public class Learners {
             return this.getClass() + " with weight indices " + Arrays.toString(this.weightIndices);
         }
     }
+
+    public static class LearnerNWeightsSeeded implements LearnerEvaluator.Learner {
+        private int[] weightIndices;
+        private double[][] seedWeightSets;
+
+        public LearnerNWeightsSeeded(int[] weightIndices, double[][] seedWeightSets) {
+            this.weightIndices = weightIndices;
+            this.seedWeightSets = seedWeightSets;
+        }
+
+		@Override
+		public IGameStateUtilityFunction train(int rows) {
+			GeneticAlgorithmLearner learner = new GeneticAlgorithmLearner(
+                (weights) -> {
+                    return evaluator.evaluate(10, rows, toUtilityFunction(weights, this.weightIndices));
+                }, this.weightIndices.length, 50, 100, 0.1, 0.8, 2, 1, 0.01, 10
+            );
+            
+            double[] weights = learner.train(this.seedWeightSets);
+            return toUtilityFunction(weights, this.weightIndices);
+        }
+        
+        @Override
+        public String toString() {
+            return this.getClass() + " with weight indices " + Arrays.toString(this.weightIndices);
+        }
+    }
 }
