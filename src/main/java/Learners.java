@@ -25,6 +25,8 @@ public class Learners {
 			ParticleSwarmLearner learner = new ParticleSwarmLearner(
                 (weights) -> {
                     return evaluator.evaluate(10, rows, toUtilityFunction(weights, this.weightIndices));
+                    //	int weightsCount, int swarmSize, int maxStallIterations, double inertiaRatio, double selfAdjustmentWeight,
+                    //		double socialAdjustmentWeight
                 }, this.weightIndices.length, 10, 20, 0.8, 1.5, 1.5
             );
             

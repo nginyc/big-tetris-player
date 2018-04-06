@@ -56,17 +56,25 @@ public class ParticleSwarmLearner {
 		this.executor = Executors.newFixedThreadPool(MAX_THREAD_COUNT);
 	}
 
+	private void initializeParticles(double[] initialParticles) {
+        // Randomly initialize particles' velocities, where each velocity is taken from U(-1, 1)
+        for (int i = 0; i < this.swarmSize; i ++) {
+            double[] particle = this.particles[i];
+            double[] particleVelocity = this.particlesVelocities[i];
+            for (int w = 0; w < this.weightsCount; w ++) {
+                if (initialParticles.length < 1) {
+                    // Randomly initialize particles, where each weight is taken from U(-1, 1)
+                    particle[w] = Math.random() * 2 - 1;
+                } else {
+                    // Don't random particle, use good weights already
+                    particle[w] = initialParticles[w];
+                }
+                particleVelocity[w] = (Math.random() * 2 - 1) * 0.1;
+            }
+        }
+	}
 	private void initializeParticles() {
-		// Randomly initialize particles, where each weight is taken from U(-1, 1)
-		// Randomly initialize particles' velocities, where each velocity is taken from U(-1, 1)
-		for (int i = 0; i < this.swarmSize; i ++) {
-			double[] particle = this.particles[i];
-			double[] particleVelocity = this.particlesVelocities[i];
-			for (int w = 0; w < this.weightsCount; w ++) {
-				particle[w] = Math.random() * 2 - 1;
-				particleVelocity[w] = (Math.random() * 2 - 1) * 0.1;
-			}
-		}
+	    initializeParticles(new double[] {});
 	}
 
 	private void evaluateParticlesFitness() {
@@ -135,21 +143,24 @@ public class ParticleSwarmLearner {
 		}
 	}
 
+	public double[] train(double[] initialParticles) {
+        int iteration = 0;
+        this.initializeParticles(initialParticles);
+        this.prettyPrintIteration(iteration);
+        while (this.stallIterations < maxStallIterations) {
+            this.evaluateParticlesFitness();
+            this.updateParticlesBests();
+            this.moveParticles();
+            iteration ++;
+            this.prettyPrintIteration(iteration);
+        }
+        this.evaluateParticlesFitness();
+        this.updateParticlesBests();
+        double[] bestParticlesBest = this.particlesBests[this.bestParticlesBestIndex];
+        return bestParticlesBest;
+    }
 	public double[] train() {
-		int iteration = 0;
-		this.initializeParticles();
-		this.prettyPrintIteration(iteration);
-		while (this.stallIterations < maxStallIterations) {
-			this.evaluateParticlesFitness();
-			this.updateParticlesBests();
-			this.moveParticles();
-			iteration ++;
-			this.prettyPrintIteration(iteration);
-		}
-		this.evaluateParticlesFitness();
-		this.updateParticlesBests();
-		double[] bestParticlesBest = this.particlesBests[this.bestParticlesBestIndex];
-		return bestParticlesBest;
+        train(new double[]{});
 	}
 
 	private void prettyPrintBestParticle(int iteration) {
