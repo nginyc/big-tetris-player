@@ -71,13 +71,13 @@ In one of the runs, found the following best weights at generation 30:
 
 [-0.3907454916830745, -0.811413075782089, -1.0, 0.3531714849383103, 0.0059182152605956875, -0.5170695909853636]
 
-It is evaluated with fitness of 2.99952181E7
+It is evaluated to clear 15634965.25 rows over 100 tries, with a peak of 119448005 in a game.
 
 #### Genetic Algorithm with Hill-Climbing (8 features)
 
 Configurations:
 
-- 8 features used (in order), normalized: column aggregate height, bumpiness, wells, blocks in field, edges touching the wall, mean height difference
+- 8 features used (in order), normalized: column aggregate height, bumpiness, wells, blocks in field, edges touching the wall, mean height difference, holes, column transitions
 - Tournament selection with tournament size of 2, selection fraction of 0.8
 - Weighted crossover
 - Gaussian mutation with probability of 0.1 to mutate a single weight for only children in a generation
@@ -91,6 +91,26 @@ In one of the runs, found the following best weights at generation 102:
 [-0.18058087213646176, -1.0, -0.9859493187639575, 0.15454976336975096, 0.009062094933315022, -0.4302022682880107, -0.2921079786301265, 0.008874001359701303]
 
 It is evaluated to clear 9318571.49 rows over 100 tries, with a peak of 48228450 rows in a game.
+
+#### Genetic Algorithm with Hill-Climbing and Seeding (8 features)
+
+Configurations:
+
+- 6 features used (in order), normalized: column aggregate height, bumpiness, wells, blocks in field, edges touching the wall, mean height difference
+- Tournament selection with tournament size of 2, selection fraction of 0.8
+- Weighted crossover
+- Gaussian mutation with probability of 0.1 to mutate a single weight for only children in a generation
+- 10-attempt hill-climbing on the best individual in a generation
+- Fitness function is the average rows cleared over 10 20-row games
+- Seeded the population with best weights found so far
+
+Performance:
+
+In one of the runs, found the following best weights at generation 4:
+
+[-0.3907454899138355, -0.7076471959178626, -0.9999999978876627, 0.34814812107690407, 0.005918216014713197, -0.506446236591784, 0.010013842808179697, 0.00000000304563703249]
+
+It is evaluated to clear 26682778.88 rows over 100 tries, with a peak of 124595264 in a game.
 
 ### Speed Optimisations
 

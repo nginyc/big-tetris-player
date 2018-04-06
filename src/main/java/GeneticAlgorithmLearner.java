@@ -30,7 +30,7 @@ public class GeneticAlgorithmLearner {
 	private int populationSize; 
 	private int weightsCount;
 	private double mutationProb;
-	private double mutationDecayRate;
+	private double mutationMaxProb;
 	private double selectedFraction;
 	private int tournamentSize;
 	private double individualHillClimbRatio;
@@ -41,7 +41,7 @@ public class GeneticAlgorithmLearner {
 
 	public GeneticAlgorithmLearner(Function<double[], Double> fitnessFunction,
 		int weightsCount, int maxStallGenerations, int populationSize, double mutationProb, 
-		double selectedFraction, int tournamentSize, double mutationDecayRate,
+		double selectedFraction, int tournamentSize, double mutationMaxProb,
 		double individualHillClimbRatio, int maxIndividualHillClimbTries) {
 		this.fitnessFunction = fitnessFunction;
 		this.maxStallGenerations = maxStallGenerations;
@@ -50,7 +50,7 @@ public class GeneticAlgorithmLearner {
 		this.weightsCount = weightsCount;
 		this.tournamentSize = tournamentSize;
 		this.selectedFraction = selectedFraction;
-		this.mutationDecayRate = mutationDecayRate;
+		this.mutationMaxProb = mutationMaxProb;
 		this.individualHillClimbRatio = individualHillClimbRatio;
 		this.maxIndividualHillClimbTries = maxIndividualHillClimbTries;
 
@@ -187,20 +187,22 @@ public class GeneticAlgorithmLearner {
 	}
 
 	private void doRandomMutation(int generatioNo) {
-		double sdRatio =  0.1 * Math.pow(this.mutationDecayRate, generatioNo);
+		// When there is stalling of best individiual
+		// Increase mutation rate
+		double stallRatio =  (double)this.stallGenerations / this.maxStallGenerations;
+		double newMutProb = this.mutationProb + stallRatio * (this.mutationMaxProb - this.mutationProb);
 		for (int i = 0; i < this.populationSize; i ++) {
 			// If individual is a child, with a probability, mutate it
 			if (!this.individualsSelected.contains(i)) {
-				if (Math.random() < this.mutationProb) {
+				if (Math.random() < newMutProb) {
 					double[] individual = this.population[i];
-					doRandomMutation(individual, sdRatio);
+					doRandomMutation(individual, 0.1);
 				}
 			}
 		}
 	}
 
 	private void hillClimbBestIndividuals(int generatioNo) {
-		double sdRatio = 0.05 * Math.pow(this.mutationDecayRate, generatioNo);
 		// For each of the best k individuals of population
 		int k = 0;
 		Iterator<Entry<Double, Integer>> iterator = this.fitnessToIndividualIndex.entrySet().iterator();
@@ -213,7 +215,7 @@ public class GeneticAlgorithmLearner {
 			int tries = 0;
 			while (tries < this.maxIndividualHillClimbTries) {
 				System.arraycopy(individual, 0, this.testIndividual, 0, this.weightsCount);
-				this.doRandomMutation(this.testIndividual, sdRatio);
+				this.doRandomMutation(this.testIndividual, 0.05);
 				double testFitness = this.fitnessFunction.apply(this.testIndividual);
 				if (testFitness > fitness) {
 					// Found neighbour that is fitter! Update individual 
