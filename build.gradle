@@ -20,7 +20,7 @@ mainClassName = 'PlayerSkeleton'
 dependencies {
     compile 'com.google.guava:guava:23.0'
 
-    compile 'io.jenetics:jenetics:4.1.0'    
+    compile 'org.apache.commons:commons-math3:3.6.1'
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
@@ -35,5 +35,20 @@ repositories {
 
 task train(type:JavaExec) {
    main = "PlayerTrainer"
+   classpath = sourceSets.main.runtimeClasspath
+}
+
+task trainSA(type:JavaExec) {
+   main = "PlayerTrainerSA"
+   classpath = sourceSets.main.runtimeClasspath
+}
+
+task evaluate(type:JavaExec) {
+   main = "Evaluator"
+   classpath = sourceSets.main.runtimeClasspath
+}
+
+task evaluateLearner(type:JavaExec) {
+   main = "LearnerEvaluator"
    classpath = sourceSets.main.runtimeClasspath
 }

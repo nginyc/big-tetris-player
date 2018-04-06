@@ -1,32 +1,56 @@
+import java.util.function.DoubleSupplier;
+
 public class GameStateUtilityFunction implements IGameStateUtilityFunction {
 
-	private double[] weights;
+    private double[] weights;
 
 	public GameStateUtilityFunction(double[] weights) {
-		if (weights.length != 16) {
+		if (weights.length != 15) {
 			throw new IllegalArgumentException();
 		}
 
 		this.weights = weights;
 	}
 
+	private double normalize(double value, double min, double max) {
+		return (value - min) / (max - min);
+	}
+
 	public double get(GameState gameState) {
-		return 
-			weights[0] * gameState.getRowsCleared() + 
-			weights[1] * gameState.getMaxTopHeight() + 
-			weights[2] * gameState.getHolesTotalVolume() +
-			weights[3] * gameState.getBlockadesTotalVolume() +
-			weights[4] * gameState.getBumpiness(1) +
-			weights[5] * gameState.getWells(2) +
-			weights[6] * gameState.getNumBlocksInField() +
-			weights[7] * gameState.hasPlayerLost() +
-			weights[8] * gameState.getMeanHeightDifference() +
-			weights[9] * gameState.getLandingHeight() +
-			weights[10] * gameState.getColTransitions() + //col transitions seem to be more damaging than row
-            weights[11] * gameState.getRowTransitions() +
-            weights[12] * gameState.getNumEdgesTouchingTheWall() +
-            weights[13] * gameState.getNumEdgesTouchingTheFloor() +
-            weights[14] * gameState.getNumEdgesTouchingCeiling() +
-            weights[15] * gameState.getNumEdgesTouchingAnotherBlock();
+		if (gameState.hasPlayerLost() == 1) {
+			return -Double.MAX_VALUE;
+        }
+
+        int col = GameState.COLS;
+		int row = gameState.rows;
+		
+        // Note: Many of the max values of the heuristics are probably overestimates, because they are the 
+		// worst/best cases which are basically almost impossible to attain.
+		// Features are wrapped in a function to allow for lazy evaluation (some weights might be passed as 0)
+		DoubleSupplier[] features = new DoubleSupplier[] {
+			() -> this.normalize(gameState.getColumnAggregateHeight(), 0, col * row),
+			() -> this.normalize(gameState.getRowsClearedInPrevMove(), 0, 4),
+			() -> this.normalize(gameState.getHolesTotalVolume(), 0, col * (row - 1)),
+			() -> this.normalize(gameState.getMaxTopHeight(), 0, row),
+			() -> this.normalize(gameState.getBumpiness(), 0, row * row * (col - 1)),
+			() -> this.normalize(gameState.getWells(), 0, row * row * (col - 1) * 2),
+			() -> this.normalize(gameState.getPrevLandingHeight(), 0, row),
+			() -> this.normalize(gameState.getColTransitions(), 0, col * row),
+			() -> this.normalize(gameState.getRowTransitions(), 0, col * row),
+			() -> this.normalize(gameState.getBlockadesTotalVolume(), 0, col * (row - 1)),
+			() -> this.normalize(gameState.getNumBlocksInField(), 0, row * (col - 1)),
+			() -> this.normalize(gameState.getMeanHeightDifference(), 0, (double)(row * col * col) / 4),
+			() -> this.normalize(gameState.getNumEdgesTouchingTheWall(), 0, row * 2),
+			() -> this.normalize(gameState.getNumEdgesTouchingTheFloor(), 0, col),
+			() -> this.normalize(gameState.getNumEdgesTouchingCeiling(), 0, col)
+		};
+		
+		double utility = 0;
+		for (int i = 0; i < 15; i ++) {
+			if (this.weights[i] != 0) {
+				utility += this.weights[i] * features[i].getAsDouble();
+			}
+		}
+        return utility;
 	}
 }
