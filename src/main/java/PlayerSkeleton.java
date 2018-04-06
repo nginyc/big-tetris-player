@@ -8,7 +8,7 @@ public class PlayerSkeleton {
 	public PlayerSkeleton() {
 		this.gameState = new GameState(State.ROWS - 1);
 		this.utilityFunction = Learners.toUtilityFunction(
-			new double[] { -0.18058087213646176, -1.0, -0.9859493187639575, 0.15454976336975096, 0.009062094933315022, -0.4302022682880107, -0.2921079786301265, 0.008874001359701303 }, 
+			new double[] { -0.3907454899138355, -0.7076471959178626, -0.9999999978876627, 0.34814812107690407, 0.005918216014713197, -0.506446236591784, 0.010013842808179697, 0.00000000304563703249 }, 
 			new int[] { 0, 4, 5, 10, 12, 11, 2, 7 }
 		);
 		this.gameStateSearcher = new GameStateSearcher(ROWS, utilityFunction);
