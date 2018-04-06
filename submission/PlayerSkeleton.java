@@ -37,22 +37,20 @@ public class PlayerSkeleton {
 	}
 	
 	public static void main(String[] args) {
+		State s = new State();
+		new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton();
-		while (true) {
-			State s = new State();
-			// new TFrame(s);
-			while(!s.hasLost()) {
-				s.makeMove(p.pickMove(s,s.legalMoves()));
-				// s.draw();
-				// s.drawNext(0,0);
-				// try {
-				// 	Thread.sleep(300);
-				// } catch (InterruptedException e) {
-				// 	e.printStackTrace();
-				// }
+		while(!s.hasLost()) {
+			s.makeMove(p.pickMove(s,s.legalMoves()));
+			s.draw();
+			s.drawNext(0,0);
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 		}
+		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 	}
 
 	// Given a game state and a utility function, returns best move
