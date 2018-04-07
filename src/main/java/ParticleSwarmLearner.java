@@ -162,6 +162,11 @@ public class ParticleSwarmLearner {
             this.moveParticles();
             iteration ++;
             this.prettyPrintIteration(iteration);
+            if (iteration == 20) {
+                swarmSize *= 0.5;
+            } else if (iteration == 40) {
+                swarmSize *= 0.5;
+            }
         }
         this.evaluateParticlesFitness();
         this.updateParticlesBests();
