@@ -73,6 +73,10 @@ In one of the runs, found the following best weights at generation 30:
 
 It is evaluated to clear 15634965.25 rows over 100 tries, with a peak of 119448005 in a game.
 
+#### PSO algorithm
+
+Around 20k lol
+
 #### Genetic Algorithm with Hill-Climbing (8 features)
 
 Configurations:

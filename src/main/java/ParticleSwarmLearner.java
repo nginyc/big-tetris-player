@@ -91,7 +91,6 @@ public class ParticleSwarmLearner {
 				Future<Double> future = (Future<Double>)this.particleTaskFutures[i];
 				double fitness = future.get();
 				this.particlesFitness[i] = fitness;
-				System.out.println("Fitnesss is: "+ fitness);
 			} catch (ExecutionException error) {
 				throw new Error("Execution exception reached: " + error.getMessage());
 			} catch (InterruptedException error) {
@@ -135,12 +134,19 @@ public class ParticleSwarmLearner {
 			double[] particle = this.particles[i];
 			double[] particleVelocity = this.particlesVelocities[i];
 			double[] particlesBest =  this.particlesBests[i];
-			double rand1 = Math.random();
-			double rand2 = Math.random();
+			double rand1 = (Math.random()) * 0.5;
+			double rand2 = (Math.random()) * 0.5;
 			for (int w = 0; w < this.weightsCount; w ++) {
-				particleVelocity[w] = this.inertiaRatio * particleVelocity[w] +
-					this.selfAdjustmentWeight * rand1 * (particlesBest[w] - particle[w]) +
-					this.socialAdjustmentWeight * rand2 * (bestParticlesBest[w] - particle[w]);
+				particleVelocity[w] = (this.inertiaRatio * particleVelocity[w]) +
+                        (this.selfAdjustmentWeight * rand1 * (particlesBest[w] - particle[w])) +
+                        (this.socialAdjustmentWeight * rand2 * (bestParticlesBest[w] - particle[w]));
+				if (Math.abs(particleVelocity[w]) < 0.0001) {
+                    // Velocity too low
+                    particleVelocity[w] = Math.signum(particleVelocity[w]) * 0.00001;
+                } else if (Math.abs(particleVelocity[w]) > 0.1) {
+				    // Velocity too high
+                    particleVelocity[w] = Math.signum(particleVelocity[w]) * 0.1;
+                }
 				particle[w] = Math.max(-1, Math.min(particle[w] + particleVelocity[w], 1));
 			}
 		}
@@ -160,6 +166,7 @@ public class ParticleSwarmLearner {
         this.evaluateParticlesFitness();
         this.updateParticlesBests();
         double[] bestParticlesBest = this.particlesBests[this.bestParticlesBestIndex];
+        prettyPrintBestParticle(iteration);
         return bestParticlesBest;
     }
 	public double[] train() {
@@ -167,7 +174,9 @@ public class ParticleSwarmLearner {
 	}
 
 	private void prettyPrintBestParticle(int iteration) {
+	    System.out.println();
 		System.out.println("Iteration " + iteration + ": Best particle is " + this.getParticlePrint(this.bestParticlesBestIndex));
+        System.out.println();
 	}
 
 	private String getParticlePrint(int particleIndex) {

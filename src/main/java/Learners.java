@@ -27,7 +27,7 @@ public class Learners {
                     return evaluator.evaluate(10, rows, toUtilityFunction(weights, this.weightIndices));
                     //	int weightsCount, int swarmSize, int maxStallIterations, double inertiaRatio, double selfAdjustmentWeight,
                     //		double socialAdjustmentWeight
-                }, this.weightIndices.length, 95, 20, 0.5, 0.8, 0.8
+                }, this.weightIndices.length, 200, 20, 0.5, 0.6, 0.9
             );
             
             //double[] weights = learner.train(new double[] {-0.3907454899138355, -0.7076471959178626, -0.9999999978876627, 0.34814812107690407, 0.005918216014713197, -0.506446236591784, 0.010013842808179697, 0.00000000304563703249});
