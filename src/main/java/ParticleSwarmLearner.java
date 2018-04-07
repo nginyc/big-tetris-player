@@ -106,12 +106,12 @@ public class ParticleSwarmLearner {
 			double bestFitness = this.particlesBestsFitness[i];
 			double currentFitness = this.particlesFitness[i];
 			if (currentFitness >= bestFitness) {
-				double[] particle = this.particles[i];
-				double[] particlesBest = this.particlesBests[i];
+
 				this.particlesBestsFitness[i] = currentFitness;
-				for (int w = 0; w < this.weightsCount; w ++) {
-					particlesBest[w] = particle[w];
+				for (int w = 0; w < this.weightsCount; w++) {
+                    this.particlesBests[i][w] = this.particles[i][w];
 				}
+
 				double bestParticlesBestsFitness = this.particlesBestsFitness[bestParticlesBestIndex];
 				if (currentFitness >= bestParticlesBestsFitness) {
 					this.bestParticlesBestIndex = i;
@@ -137,17 +137,17 @@ public class ParticleSwarmLearner {
 			double rand1 = (Math.random()) * 0.5;
 			double rand2 = (Math.random()) * 0.5;
 			for (int w = 0; w < this.weightsCount; w ++) {
-				particleVelocity[w] = (this.inertiaRatio * particleVelocity[w]) +
-                        (this.selfAdjustmentWeight * rand1 * (particlesBest[w] - particle[w])) +
-                        (this.socialAdjustmentWeight * rand2 * (bestParticlesBest[w] - particle[w]));
-				if (Math.abs(particleVelocity[w]) < 0.00001) {
+                this.particlesVelocities[i][w] = (this.inertiaRatio * this.particlesVelocities[i][w]) +
+                        (this.selfAdjustmentWeight * rand1 * (particlesBest[w] - this.particles[i][w])) +
+                        (this.socialAdjustmentWeight * rand2 * (bestParticlesBest[w] - this.particles[i][w]));
+				if (Math.abs(this.particlesVelocities[i][w]) < 0.00001) {
                     // Velocity too low
-                    particleVelocity[w] = Math.signum(particleVelocity[w]) * 0.00001;
-                } else if (Math.abs(particleVelocity[w]) > 0.1) {
+                    this.particlesVelocities[i][w] = Math.signum(this.particlesVelocities[i][w]) * 0.00001;
+                } else if (Math.abs(this.particlesVelocities[i][w]) > 0.1) {
 				    // Velocity too high
-                    particleVelocity[w] = Math.signum(particleVelocity[w]) * 0.1;
+                    this.particlesVelocities[i][w] = Math.signum(this.particlesVelocities[i][w]) * 0.1;
                 }
-				particle[w] = Math.max(-1, Math.min(particle[w] + particleVelocity[w], 1));
+                this.particles[i][w] = Math.max(-1, Math.min(this.particles[i][w] + this.particlesVelocities[i][w], 1));
 			}
 		}
 	}
