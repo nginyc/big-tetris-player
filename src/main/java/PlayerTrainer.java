@@ -6,7 +6,7 @@ public class PlayerTrainer {
 		// TODO: Try other selection & mutation methods 
 		// TODO: Try PSO
 		while (true) {
-			LearnerEvaluator.Learner learner = new Learners.LearnerNWeightsHillClimbRisingMutation(new int[] { 0, 4, 5, 10, 12, 11, 2, 7 });
+			LearnerEvaluator.Learner learner = new Learners.LearnerPsoNWeights(new int[] { 0, 4, 5, 10, 12, 11, 2, 7 });
 			IGameStateUtilityFunction utilityFunction = learner.train(20);
 			Evaluator evaluator = new Evaluator();
 			double rowsCleared = evaluator.evaluate(utilityFunction);

@@ -27,9 +27,10 @@ public class Learners {
                     return evaluator.evaluate(10, rows, toUtilityFunction(weights, this.weightIndices));
                     //	int weightsCount, int swarmSize, int maxStallIterations, double inertiaRatio, double selfAdjustmentWeight,
                     //		double socialAdjustmentWeight
-                }, this.weightIndices.length, 10, 20, 0.8, 1.5, 1.5
+                }, this.weightIndices.length, 95, 20, 0.5, 0.8, 0.8
             );
             
+            //double[] weights = learner.train(new double[] {-0.3907454899138355, -0.7076471959178626, -0.9999999978876627, 0.34814812107690407, 0.005918216014713197, -0.506446236591784, 0.010013842808179697, 0.00000000304563703249});
             double[] weights = learner.train();
             return toUtilityFunction(weights, this.weightIndices);
         }
@@ -135,6 +136,33 @@ public class Learners {
             return toUtilityFunction(weights, this.weightIndices);
         }
         
+        @Override
+        public String toString() {
+            return this.getClass() + " with weight indices " + Arrays.toString(this.weightIndices);
+        }
+    }
+
+    public static class LearnerNWeightsSimulatedAnnealing implements LearnerEvaluator.Learner {
+        private int[] weightIndices;
+
+        public LearnerNWeightsSimulatedAnnealing(int[] weightIndices) {
+            this.weightIndices = weightIndices;
+        }
+
+        @Override
+        public IGameStateUtilityFunction train(int rows) {
+            //SimulatedAnnealingLearner learner = new SimulatedAnnealingLearner(
+            //        (weights) -> {
+            //            return evaluator.evaluate(10, rows, toUtilityFunction(weights, this.weightIndices));
+            //        }, this.weightIndices.length, 20, 15, 10, 100000, 0.003
+            //);
+            //int rows, int weightsCount, int noOfTriesPerIndividual, int initialTemp, int coolingRate)
+
+            //double[] weights = learner.train();
+            //return toUtilityFunction(weights, this.weightIndices);
+            return null;
+        }
+
         @Override
         public String toString() {
             return this.getClass() + " with weight indices " + Arrays.toString(this.weightIndices);

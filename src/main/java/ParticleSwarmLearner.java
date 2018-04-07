@@ -91,6 +91,7 @@ public class ParticleSwarmLearner {
 				Future<Double> future = (Future<Double>)this.particleTaskFutures[i];
 				double fitness = future.get();
 				this.particlesFitness[i] = fitness;
+				System.out.println("Fitnesss is: "+ fitness);
 			} catch (ExecutionException error) {
 				throw new Error("Execution exception reached: " + error.getMessage());
 			} catch (InterruptedException error) {
@@ -134,10 +135,12 @@ public class ParticleSwarmLearner {
 			double[] particle = this.particles[i];
 			double[] particleVelocity = this.particlesVelocities[i];
 			double[] particlesBest =  this.particlesBests[i];
+			double rand1 = Math.random();
+			double rand2 = Math.random();
 			for (int w = 0; w < this.weightsCount; w ++) {
 				particleVelocity[w] = this.inertiaRatio * particleVelocity[w] +
-					this.selfAdjustmentWeight * (particlesBest[w] - particle[w]) +
-					this.socialAdjustmentWeight * (bestParticlesBest[w] - particle[w]);
+					this.selfAdjustmentWeight * rand1 * (particlesBest[w] - particle[w]) +
+					this.socialAdjustmentWeight * rand2 * (bestParticlesBest[w] - particle[w]);
 				particle[w] = Math.max(-1, Math.min(particle[w] + particleVelocity[w], 1));
 			}
 		}
@@ -160,7 +163,7 @@ public class ParticleSwarmLearner {
         return bestParticlesBest;
     }
 	public double[] train() {
-        train(new double[]{});
+        return train(new double[]{});
 	}
 
 	private void prettyPrintBestParticle(int iteration) {

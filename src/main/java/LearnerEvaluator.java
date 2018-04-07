@@ -9,7 +9,7 @@ public class LearnerEvaluator {
         IGameStateUtilityFunction train(int rows);
     }
 
-	public LearnerEvaluator() {
+    public LearnerEvaluator() {
     }
     
     public double evaluate(Learner learner) {
