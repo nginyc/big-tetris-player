@@ -140,7 +140,7 @@ public class ParticleSwarmLearner {
 				particleVelocity[w] = (this.inertiaRatio * particleVelocity[w]) +
                         (this.selfAdjustmentWeight * rand1 * (particlesBest[w] - particle[w])) +
                         (this.socialAdjustmentWeight * rand2 * (bestParticlesBest[w] - particle[w]));
-				if (Math.abs(particleVelocity[w]) < 0.0001) {
+				if (Math.abs(particleVelocity[w]) < 0.00001) {
                     // Velocity too low
                     particleVelocity[w] = Math.signum(particleVelocity[w]) * 0.00001;
                 } else if (Math.abs(particleVelocity[w]) > 0.1) {
