@@ -67,7 +67,7 @@ public class ParticleSwarmLearner {
                     particle[w] = Math.random() * 2 - 1;
                 } else {
                     // Don't random particle, use good weights already
-                    particle[w] = initialParticles[w];
+                    particle[w] = initialParticles[w] + (Math.random() * 2 - 1) * 0.1;;
                 }
                 particleVelocity[w] = (Math.random() * 2 - 1) * 0.1;
             }
@@ -163,8 +163,6 @@ public class ParticleSwarmLearner {
             iteration ++;
             this.prettyPrintIteration(iteration);
             if (iteration == 20) {
-                swarmSize *= 0.5;
-            } else if (iteration == 40) {
                 swarmSize *= 0.5;
             }
         }
