@@ -1,5 +1,11 @@
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+
 public class SimulatedAnnealingLearner {
 
     private double[] currentIndividual;
@@ -7,49 +13,46 @@ public class SimulatedAnnealingLearner {
     private double[] bestIndividual;
     private double temp;
 
+    private ExecutorService executor;
+    public static int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
+
     // Learning hyperparameters
-    private int rows;
+    private Function<double[], Double> fitnessFunction;
     private int weightsCount;
     private int noOfTriesPerIndividual;
     private double initialTemp;
     private double coolingRate;
 
-    public SimulatedAnnealingLearner(int rows, int weightsCount, int noOfTriesPerIndividual, 
-        double initialTemp, double coolingRate) {
-        this.rows = rows;
+    public SimulatedAnnealingLearner(Function<double[], Double> fitnessFunction,
+                                     int weightsCount, int noOfTriesPerIndividual, double initialTemp, double coolingRate) {
+        this.fitnessFunction = fitnessFunction;
         this.weightsCount = weightsCount;
         this.noOfTriesPerIndividual = noOfTriesPerIndividual;
         this.initialTemp = initialTemp;
         this.temp = initialTemp;
         this.coolingRate = coolingRate;
+
+        this.executor = Executors.newFixedThreadPool(MAX_THREAD_COUNT);
     }
 
     private double getEnergy(double[] weights) {
-        if (weights.length != this.weightsCount) {
-            throw new IllegalStateException();
+            Object futureFitness = this.executor.submit(() -> {
+                double fitness = this.fitnessFunction.apply(weights);
+                return fitness;
+            });
+        try {
+            Future<Double> future = (Future<Double>)futureFitness;
+            double fitness = future.get();
+            return fitness;
+        } catch (ExecutionException error) {
+            throw new Error("Execution exception reached: " + error.getMessage());
+        } catch (InterruptedException error) {
+            throw new Error("Interrupted exception reached: " + error.getMessage());
         }
-        GameStateUtilityFunction utilityFunction = new GameStateUtilityFunction(weights);
-        GameStateSearcher gameStateSearcher = new GameStateSearcher(this.rows, utilityFunction);
-
-        int rowsCleared = 0;
-        for (int i = 0; i < this.noOfTriesPerIndividual; i++) {
-            GameState gameState = new GameState(this.rows);
-            while (gameState.hasPlayerLost() == 0) {
-                // Randomly get a piece
-                int nextPiece = gameState.getRandomNextPiece();
-                gameState.setNextPiece(nextPiece);
-                int[] move = gameStateSearcher.search(gameState);
-                gameState.makePlayerMove(move[GameState.ORIENT], move[GameState.SLOT]);
-            }
-            rowsCleared += gameState.getRowsCleared();
-        }
-
-        double energy = (double) rowsCleared / this.noOfTriesPerIndividual;
-        return energy;
     }
 
     private double doGaussianMutation(double x, double min, double max) {
-        NormalDistribution dist = new NormalDistribution(x, (max - min) / 10);
+        NormalDistribution dist = new NormalDistribution(x, (max - min) / 100);
         return Math.min(Math.max(-1, dist.sample()), 1);
     }
 
@@ -103,9 +106,9 @@ public class SimulatedAnnealingLearner {
             double neighbourEnergy = getEnergy(neighbour);
 
             double acceptanceProb = acceptanceProbability(currentEnergy, neighbourEnergy, temp);
-            //System.out.println("currEnergy is: " + currentEnergy);
-            //System.out.println("neighboutEnergy is: " + neighbourEnergy);
-            //System.out.println("acceptanceProb is: " + acceptanceProb);
+            System.out.println("currEnergy is: " + currentEnergy);
+            System.out.println("neighbourEnergy is: " + neighbourEnergy);
+            System.out.println("acceptanceProb is: " + acceptanceProb);
 
             if (acceptanceProb >= 1.0) {
                 // Just accept
