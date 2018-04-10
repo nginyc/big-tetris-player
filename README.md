@@ -146,13 +146,13 @@ Conditions: // TODO
 
 What we did: We spawned multiple threads to simulate multiple Tetris games concurrently in the evaluation of a single set of weights.
 
-Before: // TODO
+Before: Able to clear 100565297 rows in 37min 4s (2223625ms) => 45226 rows / s
 
-After: // TODO
+After: Able to clear 92394118 rows in 9min 2s (542072ms) => 170446 rows / s
 
-Speedup: // TODO
+Speedup: 3.77x
 
-Conditions: // TODO
+Conditions: Intel(R) Core(TM) i7-4790k CPU @ 4.40GHz, 4 Core(s), 8 Logical Processor(s)
 
 #### Parallel-Fitness-Eval
 
