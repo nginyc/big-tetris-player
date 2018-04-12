@@ -146,25 +146,25 @@ Conditions: // TODO
 
 What we did: We spawned multiple threads to simulate multiple Tetris games concurrently in the evaluation of a single set of weights.
 
-Before: Able to clear 100565297 rows in 37min 4s (2223625ms) => 45226 rows / s
+Before: Able to clear 100,565,297 rows in 37min 4s (2223625ms) => 45226 rows / s
 
-After: Able to clear 92394118 rows in 9min 2s (542072ms) => 170446 rows / s
+After: Able to clear 92,394,118 rows in 9min 2s (542072ms) => 170446 rows / s
 
 Speedup: 3.77x
 
 Conditions: Intel(R) Core(TM) i7-4790k CPU @ 4.40GHz, 4 Core(s), 8 Logical Processor(s)
 
-#### Parallel-Fitness-Eval
+#### Parallel-Fitness-Eval (With Parallel-Simulation active)
 
 What we did: In our genetic algorithm, we spawned multiple threads to evaluate the fitness of multiple individuals (i.e. sets of weights) concurrently within a generation.
 
-Before: // TODO
+Before: Able to clear 157,175,687 rows in 23min 19s (1399542ms) => 112348 rows / s
 
-After: // TODO
+After: Able to clear 156,814,262 rows in 22min 56s (1376647ms) => 113963 rows / s
 
-Speedup: // TODO
+Speedup: 1.01x
 
-Conditions: // TODO
+Conditions: Intel(R) Core(TM) i7-4790k CPU @ 4.40GHz, 4 Core(s), 8 Logical Processor(s)
 
 #### No-Clone
 
