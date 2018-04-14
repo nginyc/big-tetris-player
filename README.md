@@ -166,6 +166,18 @@ Speedup: 1.01x
 
 Conditions: Intel(R) Core(TM) i7-4790k CPU @ 4.40GHz, 4 Core(s), 8 Logical Processor(s)
 
+#### Parallel-Fitness-Eval (Without Parallel-Simulation active)
+
+What we did: In our genetic algorithm, we spawned multiple threads to evaluate the fitness of multiple individuals (i.e. sets of weights) concurrently within a generation.
+
+Before: Able to clear 154,883,827 rows in 67min 32s (1399542ms) => 38224 rows / s
+
+After: Able to clear 100,161,526 rows in 43min 35s (1376647ms) => 38302 rows / s
+
+Speedup: 1.00x (None?)
+
+Conditions: Intel(R) Core(TM) i7-4790k CPU @ 4.40GHz, 4 Core(s), 8 Logical Processor(s)
+
 #### No-Clone
 
 What we did: We avoided cloning of `GameState` for each move during the 1-layer game state search (no parallelisation), instead reusing a single `GameState` construct over all searches instead.
