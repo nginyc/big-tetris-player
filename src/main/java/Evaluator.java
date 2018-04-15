@@ -39,7 +39,7 @@ public class Evaluator {
             try {
                 Future<Integer> future = (Future<Integer>)futures[j];
                 int rowsCleared = future.get();
-                // System.out.println("Rows cleared: " + rowsCleared);
+                System.out.println("Rows cleared: " + rowsCleared);
                 totalRowsCleared += rowsCleared;
 			} catch (ExecutionException error) {
 				throw new Error("Execution exception reached: " + error.getMessage());
@@ -66,6 +66,7 @@ public class Evaluator {
     }
 
 	public static void main(String[] args) {
+        long initialTime = System.currentTimeMillis();
         IGameStateUtilityFunction[] utilityFunctions = new IGameStateUtilityFunction[] {
             Learners.toUtilityFunction(
                 new double[] { -0.3907454899138355, -0.7076471959178626, -0.9999999978876627, 0.34814812107690407, 0.005918216014713197, -0.506446236591784, 0.010013842808179697, 0.00000000304563703249 }, 
@@ -81,5 +82,8 @@ public class Evaluator {
             double averageRowsCleared = evaluator.evaluate(utilityFunction);
             System.out.println("Candidate " + i + " clears average of " + averageRowsCleared + " rows over " + NO_OF_TRIES + " tries");
 		}
+
+        System.out.println("Time taken: " + (System.currentTimeMillis() - initialTime)  + "ms");
+        System.exit(0);
 	}
 }

@@ -19,7 +19,8 @@ public class GameStateSearcher {
       // Calculate move util
       int orient = legalMove[GameState.ORIENT];
       int slot = legalMove[GameState.SLOT];
-      this.searchGameState.restore(gameState);
+      this.searchGameState = gameState.clone();
+      // this.searchGameState.restore(gameState);
       this.searchGameState.makePlayerMove(orient, slot);
       double moveUtil = utilityFunction.get(this.searchGameState);
       if (bestMove == null || moveUtil >= bestMoveUtil) {
