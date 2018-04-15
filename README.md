@@ -132,23 +132,23 @@ We made certain optimisations in our code to speed up the search for, and evalua
 
 #### Fast-Features
 
-What we did: We reduced the time complexity of computing each feature by maintaining necessary derived-state variables within our custom abstraction of a Tetris game state `GameState`.
+What we did: We reduced the time complexity of computing each feature by maintaining necessary derived-state variables within our custom abstraction of a Tetris game state `GameState`. We also avoided cloning of `GameState` for each move during the 1-layer game state search (no parallelisation), instead reusing a single `GameState` construct over all searches instead.
 
-Before: // TODO
+Before: Able to clear 236,276,947 rows in 2h 25min 15s (8714554ms) => 27,113 rows / s
 
-After: // TODO
+After: Able to clear 154,295,033 rows in 37min 22s (2242825ms) => 68,794 rows / s
 
-Speedup: // TODO
+Speedup: 2.54x
 
-Conditions: // TODO
+Conditions: Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz, 2801 Mhz, 4 Core(s), 8 Logical Processor(s)
 
 #### Parallel-Simulation-Eval
 
 What we did: We spawned multiple threads to simulate multiple Tetris games concurrently in the evaluation of a single set of weights.
 
-Before: Able to clear 100,565,297 rows in 37min 4s (2223625ms) => 45226 rows / s
+Before: Able to clear 100,565,297 rows in 37min 4s (2223625ms) => 45,226 rows / s
 
-After: Able to clear 92,394,118 rows in 9min 2s (542072ms) => 170446 rows / s
+After: Able to clear 92,394,118 rows in 9min 2s (542072ms) => 170,446 rows / s
 
 Speedup: 3.77x
 
@@ -177,18 +177,6 @@ After: Able to clear 100,161,526 rows in 43min 35s (1376647ms) => 38302 rows / s
 Speedup: 1.00x (None?)
 
 Conditions: Intel(R) Core(TM) i7-4790k CPU @ 4.40GHz, 4 Core(s), 8 Logical Processor(s)
-
-#### No-Clone
-
-What we did: We avoided cloning of `GameState` for each move during the 1-layer game state search (no parallelisation), instead reusing a single `GameState` construct over all searches instead.
-
-Before: Able to clear 27752676 rows in 31m 26s (1886s) => 14715 rows / s
-
-After: Able to clear 36316541 rows in 17min 50s (1070s) => 33940 rows / s
-
-Speedup: 2.31x
-
-Conditions: Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz, 2801 Mhz, 4 Core(s), 8 Logical Processor(s)
 
 ### Search Optimisations
 
