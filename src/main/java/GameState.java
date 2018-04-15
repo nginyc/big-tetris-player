@@ -139,7 +139,7 @@ public class GameState {
         }
     }
 
-    // State variables
+    // State variables (Local)
     public int rows; // No. of rows
     private int[][] field; // Whether field at index is occupied
     private int nextPiece = -1; // As defined in `State`, -1 for not set
@@ -148,7 +148,7 @@ public class GameState {
     private int turn = 0; // Turn count
     private int rowsCleared = 0; // Rows cleared in total
 
-    // Derived variables
+    // Derived variables (Which will be maintained between states to reduce complexity)
     private int[] top; // Column heights
     private int[] bottom; // Column heights from the bottom
     private int maxTop; // Max height of column
@@ -170,6 +170,7 @@ public class GameState {
         this.field = new int[this.rows][COLS];
     }
 
+    // Passing derived variables between consecutive GameStates
     private GameState(int rows, int[][] field, int nextPiece, int lost, int turn, int rowsCleared, 
         int[] top, int[] bottom, int columnAggregateHeight, int columnAggregateBottomStackHeight, int rowsClearedInPrevMove, 
         int numBlocksInField, int maxTop, double landingHeightInPrevMove, int numBlocksTouchingWall, int[] rowTransitions, 
@@ -266,46 +267,59 @@ public class GameState {
 
     ///////////////////////// Heuristics ////////////////////////////
 
+    // Returns the total height of all the columns
+    // Height of a column is defined by the position of the highest filled cell
     public int getColumnAggregateHeight() {
         return this.columnAggregateHeight;
     }
 
+    // Returns the height of the tallest column
     public int getMaxTopHeight() {
         return this.maxTop;
     }
 
+    // Returns the total number of rows cleared
     public int getRowsCleared() {
         return this.rowsCleared;
     }
 
+    // Returns the number of rows cleared in the previous move
     public int getRowsClearedInPrevMove() {
         return this.rowsClearedInPrevMove;
     }
 
+    // Returns the number of filled cells in the field
     public int getNumBlocksInField() {
         return this.numBlocksInField;
     }
 
-    // This heuristic penalizes the volume of the holes
+    // Returns the number of holes present in the field
+    // A hole is a cell that has at least one filled cell above it (directly/indirectly)
     public int getHolesTotalVolume() {
         return this.columnAggregateHeight - this.numBlocksInField;
     }
 
-    // imagine xx___xx, there will be 2 row transitions
+    // Returns the total row transitions for all cols
+    // A transition is change from a filled cell to an empty cell and vice versa across 2 consecutive cells
+    // Row transitions is the number of changes between filled cells and empty cells across a row
     public int getRowTransitions() {
         return Arrays.stream(this.rowTransitions).sum();
     }
 
+    // Returns the total col transitions for all rows
+    // Refer to row transitions
     public int getColTransitions() {
         return Arrays.stream(this.colTransitions).sum();
     }
 
-    // This heuristic penalizes deepness of the holes
+    // Returns the total number of blockades in the field
+    // A blockade is a filled cell over a hole
     public int getBlockadesTotalVolume() {
         return this.numBlocksInField - this.columnAggregateBottomStackHeight;
     }
 
-    // This heuristic encourages smoothness of the "terrain" (TOP only)
+    // Returns the "bumpiness" across column heights
+    // Defined as the difference between consecutive columns
     public int getBumpiness() {
         int bumpiness = 0;
         for (int c = 0; c < COLS - 1; c++) {
@@ -341,12 +355,13 @@ public class GameState {
         return this.landingHeightInPrevMove;
     }
     
+    // Returns the average height of the columns
     public double getAverageHeightOfCols() {
         return (this.columnAggregateHeight / COLS);
     }
 
+    // Returns the average of the difference between the height of each col and the mean height of the state
     public double getMeanHeightDifference() {
-        // Average of the difference between the height of each col and the mean height of the state
         double meanHeightDifference = 0;
         double average = this.getAverageHeightOfCols();
         for (int c = 0; c < COLS; c++) {
@@ -356,6 +371,8 @@ public class GameState {
         return meanHeightDifference;
     }
 
+    // Returns the number of edges touching the top row
+    // A cell is made of 4 edges.
     public int getNumEdgesTouchingCeiling() {
         int count = 0;
         for (int c = 0; c < COLS; c++) {
@@ -366,10 +383,12 @@ public class GameState {
         return count;
     }
 
+    // Returns the number of edges touching the walls
     public int getNumEdgesTouchingTheWall() {
         return this.numBlocksTouchingWall;
     }
 
+    // Returns the number of edges touching the first row
     public int getNumEdgesTouchingTheFloor() {
         int count = 0;
         for (int c = 0; c < COLS; c++) {
@@ -380,6 +399,7 @@ public class GameState {
         return count;
     }
 
+    // Returns the value of a cell in the field
     public int getField(int row, int col) {
         if (row < 0 || row >= this.rows || col < 0 || col >= COLS) {
             return 0;
