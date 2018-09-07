@@ -1,7 +1,5 @@
 # Big Tetris Agent
 
-// TODO: To write more detailed setup & run instructions.
-
 ## Scripts
 
 ### Running the Player (Runs `PlayerSkeleton.java`)
